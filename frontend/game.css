@@ -1,0 +1,12 @@
+#playerDeckTop, #playerDeckBottom {
+    display: grid;
+    grid-template-columns: 4;
+    gap: 4px;
+}
+
+
+#playerDeckLeft, #playerDeckRight {
+    display: grid;
+    grid-template-rows: 4;
+    gap: 4px;
+}
