@@ -34,10 +34,12 @@ Ligretto/
 └── frontend/
     ├── index.html         [Arun] Startseite / Login
     ├── login.css          [Arun] Styles für die Startseite
-    ├── styles.css         [Arun] angelegt, noch leer
-    ├── main.js            [Arun] Event-Handling der Startseite
-    ├── login.js           [Arun] Funktionen zum Beitreten / Erstellen
-    ├── game.html          [Arun] angelegt, noch leer
+    ├── styles.css         [Arun] gemeinsames Layout (Header, Footer, Spielfeld-Grid)
+    ├── main.js            [Arun] Event-Handling der Spielseite
+    ├── login.js           [Arun] Event-Handling und Funktionen der Startseite
+    ├── game.html          [Arun] Spielseite mit Spielfeld
+    ├── game.css           [Arun] Grid für die Spieler-Decks
+    ├── create-stack.js    [Arun] Logik, [KI] Karten-Array: Karten verteilen
     ├── rules.html         [Arun] angelegt, noch leer
     └── images/            [Arun] Kartenbilder
         ├── blue/          one.PNG … ten.PNG
@@ -94,8 +96,44 @@ Ligretto/
 
 ### 3.7 Platzhalter – [Arun]
 
-- `styles.css`, `game.html` und `rules.html` sind angelegt, aber noch leer.
+- `rules.html` ist angelegt, aber noch leer.
 - `backend/` ist angelegt, aber noch leer.
+
+### 3.8 Umbau Startseite: `login.js` und `main.js` – [Arun]
+
+- Die ganze Logik der Startseite (Formular absenden, „Room erstellen“) ist von `main.js` nach `login.js` umgezogen. `login.js` hängt die Event-Listener jetzt selbst nach `DOMContentLoaded` an; `createRoom()` und `joinRoom()` sind keine Exporte mehr, sondern lokale Funktionen.
+- `index.html` bindet nur noch `login.js` ein (das `<script>` für `main.js` wurde entfernt).
+- `main.js` gehört jetzt zur Spielseite: Der Button `#joinOtherRoom` führt zurück auf `index.html`.
+
+### 3.9 Spielseite `game.html`, `styles.css`, `game.css` – [Arun]
+
+- `game.html` mit Header (Überschrift „Los gehts“, Button „Trette einem anderen Room bei“), Footer wie auf der Startseite und einem Spielfeld in `main`:
+  - vier Spieler-Bereiche `#playerDeckTop`, `#playerDeckLeft`, `#playerDeckRight`, `#playerDeckBottom` (Klasse `playerDeck`),
+  - in der Mitte `#playArea` für die gemeinsamen Ablagestapel.
+- `styles.css`: Header und Footer als 3-spaltiges Grid (aus `login.css` hierher verschoben). `main` als 3×3-Grid (`1fr 4fr 1fr`), damit die Spieler rund um das Spielfeld sitzen.
+- `game.css`: Grid-Regeln für die Spieler-Decks (oben/unten nebeneinander, links/rechts untereinander).
+
+### 3.10 Karten und Startstapel `create-stack.js`
+
+**Kartendaten**
+
+- **[Arun]** Idee: Jede Karte wird als Objekt mit eindeutiger ID, Bildpfad und Wert gespeichert.
+- **[KI]** Hinweis, dass bei Ligretto jede Karte (z. B. „grüne 5“) in jedem der vier Decks vorkommt und der Besitzer deshalb Teil der ID sein muss. **[Arun]** hat entschieden, das so umzusetzen.
+- **[KI]** Das Array `CARDS` mit allen 160 Karten (4 Besitzer × 4 Farben × 10 Werte) per Skript erzeugt. Jede Karte hat:
+  - `id` im Format `besitzer-farbe-wert`, z. B. `yellow-green-5`,
+  - `owner` (Rückseitenfarbe, also wem die Karte gehört),
+  - `color` und `value` (für die Spielregeln),
+  - `src` (Bild der Vorderseite) und `back` (Bild der Rückseite).
+
+**Logik – [Arun], Syntax-Hilfe von [KI]**
+
+- `getDeck(owner)` liefert alle 40 Karten eines Besitzers (mit `filter`).
+- `createStartStack()` zieht zufällig 14 Karten aus dem gelben Deck:
+  - Ein zufälliger Index wird mit `Math.floor(Math.random() * länge)` bestimmt.
+  - Ist die Karte schon gezogen (`includes` in `openCards` oder `tenStack`), wird mit einer `while`-Schleife neu gezogen, damit keine Karte doppelt vorkommt.
+  - Die ersten 4 Karten kommen in `openCards` (offene Reihe), die restlichen 10 in `tenStack` (Zehnerstapel).
+- **[KI]** Syntax-Hilfe: Zugriff mit `array[index]`, `includes` statt `in` (der `in`-Operator prüft bei Arrays nur die Indizes, nicht die Inhalte).
+
 
 ---
 
@@ -103,11 +141,15 @@ Ligretto/
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
 
-1. In `main.js` wird `roomId` gesetzt, aber nirgends weiterverwendet. `joinRoom()` bekommt die RoomID nicht übergeben.
-2. `login.js` wird in `index.html` als eigenes Script eingebunden und zusätzlich in `main.js` importiert. Das zweite `<script>`-Tag wäre nicht nötig.
-3. In `main.js` fehlen nach zwei Zeilen die Semikolons (`createRoomButton`, `roomId`). Das funktioniert, ist aber uneinheitlich.
-4. `.DS_Store`-Dateien (macOS) liegen im Projekt und sind noch nicht committet. Sie gehören in die `.gitignore`.
-5. Die Bilddateien enden auf `.PNG` (Grossbuchstaben). Auf Servern, die Gross- und Kleinschreibung unterscheiden, muss der Pfad im Code genau so geschrieben werden.
+1. In `login.js` wird `roomId` gesetzt, aber nirgends weiterverwendet. `joinRoom()` bekommt die RoomID nicht übergeben.
+2. `game.html` bindet nur `styles.css` ein, nicht `game.css`. Die Regeln in `game.css` greifen deshalb noch nicht.
+3. In `game.css` ist `grid-template-columns: 4;` bzw. `grid-template-rows: 4;` kein gültiger Wert. Gemeint ist vermutlich `repeat(4, 1fr)`.
+4. `createStartStack()` gibt `openCards` und `tenStack` noch nicht zurück und verteilt nur das gelbe Deck. `blueCards`, `greenCards` und `pinkCards` werden noch nicht verwendet.
+5. `create-stack.js` wird noch von keiner Seite eingebunden bzw. importiert.
+6. `.DS_Store`-Dateien (macOS) liegen im Projekt. Sie gehören in die `.gitignore`.
+7. Die Bilddateien enden auf `.PNG` (Grossbuchstaben). Auf Servern, die Gross- und Kleinschreibung unterscheiden, muss der Pfad im Code genau so geschrieben werden (in `CARDS` ist das so umgesetzt).
+
+Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunden.
 
 ---
 
@@ -118,3 +160,7 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 | 13.10.2026 | [Arun] | Initial commit: `README.md`, `.gitignore` |
 | 13.10.2026 | [Arun] | Frontend: Startseite, Styles, JS-Logik, Kartenbilder, Platzhalter |
 | 13.10.2026 | [KI] | `Dokumentation/Dokumentation.md`, `AGENTS.md` erstellt, `README.md` ausgebaut |
+| 13.10.2026 | [Arun] | Startseiten-Logik nach `login.js` verschoben, `main.js` für die Spielseite |
+| 13.10.2026 | [Arun] | Spielseite: `game.html`, `styles.css`, `game.css` |
+| 13.10.2026 | [Arun] | `create-stack.js`: `getDeck()` und `createStartStack()` (Logik) |
+| 13.10.2026 | [KI] | `create-stack.js`: Array `CARDS` mit 160 Karten erzeugt, Syntax-Hilfe; Dokumentation nachgeführt |

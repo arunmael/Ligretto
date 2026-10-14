@@ -174,21 +174,22 @@ export function getDeck(owner) {
 
 
 
-export function createStartStack () {
-    const yellowCards = getDeck("yellow");
-    const blueCards = getDeck("blue");
-    const greenCards = getDeck("green");
-    const pinkCards = getDeck("pink");
+export function createStartStack (owner) {
+    let cards = getDeck(owner);
+     
+
+//todo die Karten er DOM in an die richtigen Stellen im game einfuegen und den nachfolgenden code nicht nur fuer gelb sondern fuer alle farben machen.
+//das einfuegen per DOM als eigene Funktion bauen.
 
     let openCards = [];
     let tenStack = [];
     for (let i = 0; i < 14; i++) {
         let index = Math.floor(Math.random() * yellowCards.length);
-        let card = yellowCards[index];
+        let card = cards[index];
 
         while (openCards.includes(card) || tenStack.includes(card)) {
             index = Math.floor(Math.random() * yellowCards.length);
-            card = yellowCards[index];
+            card = cards[index];
         };
 
         if (i >= 4) {
@@ -196,10 +197,17 @@ export function createStartStack () {
         } else {
             openCards.push(card)
         }
-
-
-
     }
 
+    let handCards = cards.filter(card => !openCards.includes(card) && !tenStack.includes(card));
+
+    for (let i = handCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [handCards[i], handCards[j]] = [handCards[j], handCards[i]];
+    }
+
+    return { openCards, tenStack, handCards };
 
  }
+
+
