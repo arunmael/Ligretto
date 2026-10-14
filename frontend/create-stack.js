@@ -204,32 +204,70 @@ export function createStartStack (owner) {
 
     return { openCards, tenStack, handCards };
 
- }
+ };
 
 
 export function createDOMStack (openCards, tenStack, handCards) {
     const playerDeckBottom = document.querySelector("#playerDeckBottom");
+    const playerColor = sessionStorage.getItem("playerColor");
+    console.log(`The player color is ${playerColor}`)
 
 
+    // open cards erstellen
     for (let i = 1; i < 4; i++) {
         const newDiv = document.createElement("div");
         const newImage = document.createElement("img");
 
-        newDiv.id = `openCard${openCards.id}`;
+        newDiv.id = `openCard${openCards[i].id}`;
         newDiv.classList.add("openCardsElement");
         
-        newImage.id = `image${openCards.id}`;
+        newImage.id = `image${openCards[i].id}`;
         newImage.classList.add("openCardImage");
 
-        newImage.setAttribute("src", CARDS[i].src);
-        newImage.setAttribute("alt", CARDS[i].alt)
+        newImage.setAttribute("src", openCards[i].src);
+        newImage.setAttribute("alt", openCards[i].alt);
+        newImage.setAttribute("width", "80px");
+        newImage.setAttribute("height", "auto");
 
+        newDiv.appendChild(newImage);
         playerDeckBottom.appendChild(newDiv);
-        
-        const newDivId = document.querySelector(`#openCard${openCards.id}`)
-        newDivId.appendChild(newImage)
-    } 
+    };
     
+    // tenStack erstellen
+    let newDiv = document.createElement("div");
+    let newImage = document.createElement("img");
 
+    newDiv.id = `openCard${tenStack[0].id}`;
+    newDiv.classList.add("tenStackElement");
+    
+    newImage.id = `image${tenStack[0].id}`;
+    newImage.classList.add("tenStackImage");
+
+    newImage.setAttribute("src", tenStack[0].src);
+    newImage.setAttribute("alt", tenStack[0].alt);
+    newImage.setAttribute("width", "80px");
+    newImage.setAttribute("height", "auto");
+
+    newDiv.appendChild(newImage);
+    playerDeckBottom.appendChild(newDiv);
+
+
+    //hand cards erstellen
+    newDiv = document.createElement("div");
+    newImage = document.createElement("img");
+
+    newDiv.id = `handCardsDiv${playerColor}`;
+    newDiv.classList.add("handCardsElement");
+    
+    newImage.id = `handCardsBackgroundImage`;
+    newImage.classList.add("handCardsImage");
+
+    newImage.setAttribute("src", `images/back/${playerColor}.PNG`);
+    newImage.setAttribute("alt", `back of the blue card ${playerColor}`);
+    newImage.setAttribute("width", "80px");
+    newImage.setAttribute("height", "auto");
+
+    newDiv.appendChild(newImage);
+    playerDeckBottom.appendChild(newDiv);
 
 }
