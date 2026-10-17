@@ -123,6 +123,7 @@ Ligretto/
   - `id` im Format `besitzer-farbe-wert`, z. B. `yellow-green-5`,
   - `owner` (Rückseitenfarbe, also wem die Karte gehört),
   - `color` und `value` (für die Spielregeln),
+  - `alt` (Alternativtext der Karte, z. B. „Blau 1“ oder „Grün 10“; **[Arun]** wollte pro Karte einen `alt`-Wert, **[KI]** hat die Formulierung „Farbe Wert“ gewählt),
   - `src` (Bild der Vorderseite) und `back` (Bild der Rückseite).
 
 **Logik – [Arun], Syntax-Hilfe von [KI]**
@@ -134,8 +135,54 @@ Ligretto/
   - Die ersten 4 Karten kommen in `openCards` (offene Reihe), die restlichen 10 in `tenStack` (Zehnerstapel).
 - **[KI]** Syntax-Hilfe: Zugriff mit `array[index]`, `includes` statt `in` (der `in`-Operator prüft bei Arrays nur die Indizes, nicht die Inhalte).
 
+**DOM-Stapel `createDOMStack()` – [Arun], dokumentiert von [KI] (Commit `b2cfc83`, 14.10.2026)**
+
+Verglichen wurde der letzte Commit (`b2cfc83`) mit dem vorletzten (`858186b`).
+
+- **[Arun]** `createDOMStack(openCards, tenStack, handCards)` baut die Karten des eigenen Spielers im Element `#playerDeckBottom` auf. Die Farbe des Spielers kommt aus `sessionStorage` (`playerColor`) und wird mit `console.log` ausgegeben.
+- **[Arun]** Offene Karten: Die Schleife liest jetzt aus `openCards[i]` statt aus `CARDS[i]`. Vorher war es `openCards.id` (ein Array hat kein `id`) und `CARDS[i]`, also immer die gleichen Karten aus dem Gesamtarray. Pro Karte entstehen ein `div` (Klasse `openCardsElement`) und ein `img` (Klasse `openCardImage`) mit `src` und `alt` der Karte, Breite `80px`, Höhe `auto`. Das `div` wird direkt mit `appendChild` angehängt. Das spätere Suchen per `querySelector` ist weggefallen.
+- **[Arun]** Zehnerstapel: Neu wird die oberste Karte `tenStack[0]` als `div` (Klasse `tenStackElement`) mit `img` (Klasse `tenStackImage`) dargestellt.
+- **[Arun]** Handkarten: Neu wird ein `div` (Klasse `handCardsElement`, ID `handCardsDiv<Farbe>`) mit der Rückseite `images/back/<Farbe>.PNG` (Klasse `handCardsImage`) angezeigt.
+- **[Arun]** Ein Semikolon nach `createStartStack` ergänzt (`};`) und die Schleifen mit `;` abgeschlossen.
+- **[Arun]** `game.css`: Die Grids `#playerDeckTop`/`#playerDeckBottom` und `#playerDeckLeft`/`#playerDeckRight` haben jetzt 6 statt 5 Spalten bzw. Zeilen (4 offene Karten + Zehnerstapel + Handkarten = 6 Elemente).
+
+**[KI]** Beim Durchsehen aufgefallen (am Code wurde nichts geändert, das entscheidest du, Arun):
+
+1. Die Schleife `for (let i = 1; i < 4; i++)` beginnt bei 1 und endet bei 3. Es werden also nur 3 statt 4 offene Karten gezeichnet, `openCards[0]` fehlt.
+2. Die ID des Zehnerstapel-`div` beginnt mit `openCard…` (`openCard${tenStack[0].id}`). Vermutlich war `tenStack…` gemeint.
+3. Der `alt`-Text der Handkarten lautet `back of the blue card ${playerColor}`. Das steht auch bei nicht-blauen Spielern „blue“. Vermutlich war nur `back of the ${playerColor} card` gemeint.
+4. Dieser Dokumentationsabschnitt beschreibt `createStartStack` noch so wie früher (nur gelbes Deck). Im Code nimmt die Funktion jetzt `owner` entgegen und liefert zusätzlich `handCards` (die restlichen 26 Karten, gemischt). Das stammt aus früheren Commits und ist hier noch nicht nachgeführt.
+
 
 ---
+
+### 3.11 Einheitliche Grösse der Handkarten-Rückseiten – [KI], 16.10.2026
+
+- Auf Wunsch von **[Arun]** reserviert der Handkarten-Container in `createDOMStack()` jetzt 80 × 120 px und zentriert das Bild mit Flexbox.
+- **[KI]** Die blaue Rückseite erhält vor der Drehung um 90° nach rechts eine Grösse von 120 × 80 px. Die übrigen Rückseiten erhalten direkt 80 × 120 px. `flexShrink = "0"` verhindert, dass Flexbox das blaue Bild verkleinert.
+- **[KI]** Die bisherige alleinige Drehung und die ungeeigneten Grössenattribute bleiben mit Erklärungen auskommentiert erhalten. Jede neue Codezeile ist kommentiert.
+- **[KI]** Dieser neue Eintrag wartet noch auf die Prüfung durch Arun.
+- **[Arun]** Nachträgliche Anpassung (siehe 3.13): Der Container misst jetzt 60 × 90 px, die blaue Rückseite 90 × 60 px (vor der Drehung), die übrigen 60 × 90 px. Die oben genannten 80 × 120 px gelten nicht mehr.
+
+### 3.12 Versetzter Zehnerstapel – [KI], 17.10.2026
+
+- Auf Wunsch von **[Arun]** zeigt `createDOMStack()` alle Karten aus `tenStack` mit je 2 px Versatz nach rechts und unten. Die Vorderseiten und die bestehenden schwarzen, abgerundeten Rahmen bleiben sichtbar.
+- **[KI]** Der Container ist relativ positioniert, die Karten absolut. Seine Masse berücksichtigen Kartenanzahl und Rahmen. `tenStack[0]` liegt durch `zIndex` oben; nur dieses Bild empfängt Zeigereingaben. Die Container-ID lautet jetzt `tenStackDiv<Farbe>` und funktioniert auch bei leerem Stapel.
+- **[KI]** Die bisherige Einzelkartendarstellung bleibt auskommentiert erhalten. Klickaktionen und das Aktualisieren nach einem Spielzug sind noch nicht implementiert; beim späteren Entfernen einer Karte muss auch die Darstellung aktualisiert werden.
+- **[KI]** Dieser neue Eintrag wartet noch auf die Prüfung durch Arun.
+- **[Arun]** Nachträgliche Anpassung (siehe 3.13): Die Stapelbilder sind 60 × 90 px gross, der Versatz pro Karte beträgt `i * 2.5` px statt 2 px. Die Container-Masse (`84 + …` / `124 + …`, Versatz `* 2`) wurden dabei **nicht** mitgeändert und passen deshalb nicht mehr genau (siehe Abschnitt 4).
+
+### 3.13 Weitere Änderungen von Arun – [Arun], dokumentiert von [KI], 17.10.2026
+
+Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit `b2cfc83`.
+
+- **[Arun]** `index.html`: Die Optionen der Farbauswahl hatten doppelte Werte (`Gelb` = `blue`, `Pink` = `green`). Jetzt haben sie die richtigen Werte `yellow` und `pink`, sonst hätte die Auswahl „Gelb“ bzw. „Pink“ das falsche Deck geliefert.
+- **[Arun]** `create-stack.js`, offene Karten: Breite von `80px` auf `60px`, dazu ein schwarzer Rahmen (`2px solid black`) mit abgerundeten Ecken (`10px`).
+- **[Arun]** `create-stack.js`, Handkarten: Container 60 × 90 px, per Flexbox zentriert. Die blaue Rückseite (Querformat) wird 90 × 60 px gross und um 90° gedreht, die anderen 60 × 90 px. Schwarzer, abgerundeter Rahmen wie bei den anderen Karten. Die Attribute `width`/`height` am Bild wurden entfernt.
+- **[Arun]** `create-stack.js`: Neue Funktion `createPlayeArea()` erzeugt in `#playArea` ein 4 × 4-Raster mit 16 leeren Feldern (`playAreaField0` … `playAreaField15`, je 60 × 90 px, grauer, abgerundeter Rahmen) für die gemeinsamen Ablagestapel. Ein Kommentar im Code vermerkt, dass die Zahl 4 später durch die Spieleranzahl ersetzt werden soll.
+- **[Arun]** `main.js`: Ruft `createStack.createPlayeArea()` vor `createDOMStack(...)` auf.
+- **[Arun]** `game.css`: Die Bereiche werden per `grid-area` im 3 × 3-Raster platziert (`#playerDeckTop` 1/2, `#playerDeckLeft` 2/1, `#playArea` 2/2, `#playerDeckRight` 2/3, `#playerDeckBottom` 3/2). Dazu kommen Regeln für `body` (Grid mit `auto minmax(0, 1fr) auto`, Höhe `100dvh`) und `main` (`minmax`-Zeilen `1fr 4fr 1fr`, `gap: 8px`).
+- **[KI]** Neue Auffälligkeiten dazu stehen in Abschnitt 4 (Punkte 8 bis 12).
 
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
@@ -148,6 +195,11 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 5. `create-stack.js` wird noch von keiner Seite eingebunden bzw. importiert.
 6. `.DS_Store`-Dateien (macOS) liegen im Projekt. Sie gehören in die `.gitignore`.
 7. Die Bilddateien enden auf `.PNG` (Grossbuchstaben). Auf Servern, die Gross- und Kleinschreibung unterscheiden, muss der Pfad im Code genau so geschrieben werden (in `CARDS` ist das so umgesetzt).
+8. `create-stack.js`, `createPlayeArea()`: `newDiv.classList.add = "playAreaField"` überschreibt die Methode `add` mit einem String, statt die Klasse zu setzen. Richtig wäre `newDiv.classList.add("playAreaField")`. Ausserdem ist der Funktionsname vermutlich ein Tippfehler (`createPlayArea`).
+9. `game.css`, am Ende der `main`-Regel steht ein verirrtes `^` nach `gap: 8px;`. Das kann die Regel ungültig machen.
+10. `game.css`: Die `main`-Regel setzt `grid-template-rows`, aber kein `display: grid`. Ob das aus `styles.css` kommt, ist ungeprüft; sonst wirkt sie nicht. Zudem sind `#playArea { grid-area: 2 / 2; }` und die Regeln für `body` doppelt bzw. überschneiden sich mit `styles.css`.
+11. Zehnerstapel: Die Container-Masse rechnen mit Bildgrösse 80 × 120 px und 2 px Versatz, die Bilder sind aber 60 × 90 px mit `i * 2.5` px Versatz. Der Container ist dadurch zu gross bzw. der Versatz wird nicht korrekt eingerechnet.
+12. Die Stapelkarten haben `width: 60px` / `height: 90px` zuzüglich 2 px Rahmen. Je nach `box-sizing` sind sie 4 px grösser als angegeben.
 
 Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunden.
 
@@ -157,6 +209,10 @@ Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunde
 
 | Datum | Wer | Was |
 |---|---|---|
+| 17.10.2026 | [Arun] | `index.html`: Farbwerte korrigiert; `create-stack.js`: Kartengrösse 60 × 90 px mit Rahmen, neue Funktion `createPlayeArea()`; `main.js`: Aufruf; `game.css`: `grid-area`, `body`, `main` (noch nicht committet) |
+| 17.10.2026 | [KI] | Änderungen von Arun als 3.13 dokumentiert, Abweichungen in 3.11/3.12 vermerkt, Auffälligkeiten 8 bis 12 notiert (am Code nichts geändert) |
+| 17.10.2026 | [KI] | Auf Wunsch von Arun: Alle Zehnerstapel-Karten mit 2 px Versatz darstellen, oberste Karte über zIndex festlegen, Zeigereingaben auf diese beschränken und Änderung dokumentieren. |
+| 16.10.2026 | [KI] | Auf Wunsch von Arun: Handkarten-Rückseiten auf sichtbar 80 × 120 px vereinheitlicht, blaue Rückseite passend dimensioniert und im Container zentriert; bisherigen Code auskommentiert und Änderung dokumentiert. |
 | 13.10.2026 | [Arun] | Initial commit: `README.md`, `.gitignore` |
 | 13.10.2026 | [Arun] | Frontend: Startseite, Styles, JS-Logik, Kartenbilder, Platzhalter |
 | 13.10.2026 | [KI] | `Dokumentation/Dokumentation.md`, `AGENTS.md` erstellt, `README.md` ausgebaut |
@@ -164,3 +220,6 @@ Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunde
 | 13.10.2026 | [Arun] | Spielseite: `game.html`, `styles.css`, `game.css` |
 | 13.10.2026 | [Arun] | `create-stack.js`: `getDeck()` und `createStartStack()` (Logik) |
 | 13.10.2026 | [KI] | `create-stack.js`: Array `CARDS` mit 160 Karten erzeugt, Syntax-Hilfe; Dokumentation nachgeführt |
+| 14.10.2026 | [KI] | `create-stack.js`: Feld `alt` bei allen 160 Karten in `CARDS` ergänzt (auf Wunsch von [Arun], ohne Code-Kommentare); Dokumentation nachgeführt |
+| 14.10.2026 | [Arun] | `create-stack.js`: `createDOMStack()` zeigt offene Karten, Zehnerstapel und Handkarten an; `game.css`: 6 statt 5 Spalten/Zeilen (Commit `b2cfc83`) |
+| 14.10.2026 | [KI] | Änderungen von Commit `b2cfc83` gegenüber `858186b` dokumentiert, Auffälligkeiten notiert |

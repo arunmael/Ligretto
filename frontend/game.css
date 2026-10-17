@@ -10,3 +10,26 @@
     grid-template-rows: repeat(6, 1fr);
     gap: 4px;
 }
+#playerDeckTop { grid-area: 1 / 2; } 
+#playerDeckLeft { grid-area: 2 / 1; }
+#playArea { grid-area: 2 / 2; }
+#playerDeckRight { grid-area: 2 / 3; }
+#playerDeckBottom { grid-area: 3 / 2; }
+
+#playArea {grid-area: 2 / 2;}
+
+
+body {
+    margin: 0;
+    height: 100dvh; 
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto; 
+}
+
+main { 
+    display: grid;
+    min-height: 0;
+    min-width: 0; 
+    grid-template-rows: minmax(0, 1fr) minmax(0, 4fr) minmax(0, 1fr);
+    gap: 2px;
+}

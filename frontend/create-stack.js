@@ -172,6 +172,7 @@ export function getDeck(owner) {
   return CARDS.filter(card => card.owner === owner);
 }
 
+
 export function createStartStack (owner) {
     let cards = getDeck(owner);
 
@@ -226,29 +227,61 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
         newImage.setAttribute("src", openCards[i].src);
         newImage.setAttribute("alt", openCards[i].alt);
-        newImage.setAttribute("width", "80px");
+        newImage.setAttribute("width", "60px");
         newImage.setAttribute("height", "auto");
 
         newDiv.appendChild(newImage);
         playerDeckBottom.appendChild(newDiv);
+        newImage.style.border = "2px solid black";
+        newImage.style.borderRadius = "10px";
     };
     
     // tenStack erstellen
     let newDiv = document.createElement("div");
-    let newImage = document.createElement("img");
+    // FALSCH für den vollständigen Stapel: Ein einzelnes Bild zeigt nur eine der zehn Karten.
+    // let newImage = document.createElement("img");
+    let newImage; // Hält später das Handkartenbild; die Stapelbilder werden einzeln in der Schleife erstellt.
 
-    newDiv.id = `openCard${tenStack[0].id}`;
+    // FALSCH für einen leeren Stapel: tenStack[0].id würde auf eine nicht vorhandene Karte zugreifen.
+    // newDiv.id = `openCard${tenStack[0].id}`;
+    newDiv.id = `tenStackDiv${playerColor}`; // Identifiziert den Stapel unabhängig von seiner obersten Karte.
     newDiv.classList.add("tenStackElement");
     
-    newImage.id = `image${tenStack[0].id}`;
-    newImage.classList.add("tenStackImage");
+    // FALSCH für die gewünschte Darstellung: Dieser Block fügt nur die oberste Karte ohne Versatz hinzu.
+    // newImage.id = `image${tenStack[0].id}`;
+    // newImage.classList.add("tenStackImage");
+    // newImage.setAttribute("src", tenStack[0].src);
+    // newImage.setAttribute("alt", tenStack[0].alt);
+    // newImage.setAttribute("width", "60px");
+    // newImage.setAttribute("height", "auto");
+    // newDiv.appendChild(newImage);
+    // newImage.style.border = "2px solid black";
+    // newImage.style.borderRadius = "10px";
 
-    newImage.setAttribute("src", tenStack[0].src);
-    newImage.setAttribute("alt", tenStack[0].alt);
-    newImage.setAttribute("width", "80px");
-    newImage.setAttribute("height", "auto");
+    const stackOffset = Math.max(0, tenStack.length - 1) * 2; // Berechnet den Gesamtversatz auch bei weniger als zehn Karten.
+    newDiv.style.position = "relative"; // Macht den Container zum Bezugspunkt der absolut positionierten Karten.
+    newDiv.style.width = `${84 + stackOffset}px`; // Reserviert 80 px Bildbreite, 4 px Rahmen und den Gesamtversatz.
+    newDiv.style.height = `${124 + stackOffset}px`; // Reserviert 120 px Bildhöhe, 4 px Rahmen und den Gesamtversatz.
+    newDiv.style.isolation = "isolate"; // Beschränkt die Stapelreihenfolge auf diesen Container.
 
-    newDiv.appendChild(newImage);
+    for (let i = 0; i < tenStack.length; i++) { // Erstellt ein eigenes Bild für jede vorhandene Stapelkarte.
+        const image = document.createElement("img"); // Ermöglicht eine unabhängige Position und spätere Klickbehandlung pro Karte.
+        const offset = i * 2.5; // Verschiebt jede weitere Karte um 2 px nach rechts und unten.
+        image.id = `image${tenStack[i].id}`; // Ordnet das Bild eindeutig der jeweiligen Karte zu.
+        image.classList.add("tenStackImage"); // Behält die bestehende Klasse für Stapelkarten bei.
+        image.src = tenStack[i].src; // Zeigt die Vorderseite der jeweiligen Karte wie vorgeschlagen.
+        image.alt = tenStack[i].alt; // Übernimmt die passende Kartenbeschreibung.
+        image.style.width = "60px"; // Behält die bisherige Bildbreite der Karten bei.
+        image.style.height = "90px"; // Gibt allen Stapelkarten dieselbe Höhe.
+        image.style.position = "absolute"; // Legt die Karten übereinander statt nebeneinander.
+        image.style.left = `${offset}px`; // Setzt den horizontalen Versatz relativ zum Stapel.
+        image.style.top = `${offset}px`; // Setzt den vertikalen Versatz relativ zum Stapel.
+        image.style.zIndex = `${tenStack.length - i}`; // Hält tenStack[0] sichtbar über allen nachfolgenden Karten.
+        image.style.pointerEvents = i === 0 ? "auto" : "none"; // Verhindert Klicks auf die sichtbaren Ränder unterer Karten.
+        image.style.border = "2px solid black"; // Behält den vorhandenen Rahmen bei und macht die Kartenränder sichtbar.
+        image.style.borderRadius = "10px"; // Behält die vorhandenen abgerundeten Kartenecken bei.
+        newDiv.appendChild(image); // Fügt jede Karte zum gemeinsamen Stapelcontainer hinzu.
+    }
     playerDeckBottom.appendChild(newDiv);
 
 
@@ -262,12 +295,50 @@ export function createDOMStack (openCards, tenStack, handCards) {
     newImage.id = `handCardsBackgroundImage`;
     newImage.classList.add("handCardsImage");
 
+    newDiv.style.width = "60px";
+    newDiv.style.height = "90px";
+    newDiv.style.display = "flex"; 
+    newDiv.style.alignItems = "center";
+    newDiv.style.justifyContent = "center";
+    newImage.style.flexShrink = "0"; 
+    newImage.style.border = "2px solid black";
+    newImage.style.borderRadius = "10px";
+
+    if (playerColor === "blue") { 
+        newImage.style.width = "90px"; 
+        newImage.style.height = "60px";
+        newImage.style.transform = "rotate(90deg)";
+    } else { 
+        newImage.style.width = "60px";
+        newImage.style.height = "90px"; 
+    } 
+
     newImage.setAttribute("src", `images/back/${playerColor}.PNG`);
-    newImage.setAttribute("alt", `back of the blue card ${playerColor}`);
-    newImage.setAttribute("width", "80px");
-    newImage.setAttribute("height", "auto");
+    newImage.setAttribute("alt", `back of the ${playerColor} card`);
+
 
     newDiv.appendChild(newImage);
     playerDeckBottom.appendChild(newDiv);
 
+}
+
+
+
+// überall die Zahl 4 durch eine Anzahl Spieler Variable ersetzen
+export function createPlayArea() {
+    const playArea = document.querySelector("#playArea");
+    playArea.style.display = "grid";
+    playArea.style.gridTemplateRows = "repeat(4, 1fr)";
+    playArea.style.gridTemplateColumns = "repeat(4, 1fr)";
+    playArea.style.gap = "2px";
+    for (let i = 0; i < 16; i++) {
+        let newDiv = document.createElement("div");
+        newDiv.style.border = "1px solid grey";
+        newDiv.style.borderRadius = "10px";
+        newDiv.id = `playAreaField${i}`;
+        newDiv.classList.add("playAreaField")
+        newDiv.style.width = "60px";
+        newDiv.style.height = "90px";
+        playArea.appendChild(newDiv);
+    }
 }

@@ -12,9 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const playerStartStacks = createStack.createStartStack(owner);
 
+    createStack.createPlayArea();
+
     createStack.createDOMStack(playerStartStacks.openCards,
     playerStartStacks.tenStack,
     playerStartStacks.handCards)
+
 
 
 
