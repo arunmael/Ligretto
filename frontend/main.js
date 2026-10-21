@@ -46,15 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     playArea.addEventListener("click", (event) => {
         const newLocation = event.target;
-        if (newLocation.className !== "playAreaField") return;
+        if (newLocation.className !== "playAreaField" && !(newLocation instanceof HTMLImageElement)) return;
         activeField.style.border = "2px solid black";
         const card = activeField;
         const openCards = playerStartStacks.openCards;
         const tenStack = playerStartStacks.tenStack;
         const handCards = playerStartStacks.handCards;
-        console.log(newLocation)
+        if (newLocation instanceof HTMLImageElement) {
+            const parent = newLocation.parentElement;
+            newLocation.remove();
+            console.log("removed");
+            moveCards.moveCardsToPlayArea(card, parent, openCards, tenStack, handCards);
+        } else {
+            moveCards.moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards);
+        }
     
-        moveCards.moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards);
         activeField = null;
     });
 

@@ -17,7 +17,7 @@ Jeder Abschnitt und jeder Eintrag ist mit einer dieser Markierungen versehen.
 
 **[Arun]** Ligretto ist ein Online-Multiplayer-Kartenspiel im Browser. Spielerinnen und Spieler können einen Raum (Room) erstellen oder über eine RoomID einem bestehenden Raum beitreten.
 
-**[KI]** Diese Dokumentation beschreibt den Stand vom 13.10.2026.
+**[KI]** Diese Dokumentation beschreibt den Stand vom 21.10.2026.
 
 ---
 
@@ -40,6 +40,8 @@ Ligretto/
     ├── game.html          [Arun] Spielseite mit Spielfeld
     ├── game.css           [Arun] Grid für die Spieler-Decks
     ├── create-stack.js    [Arun] Logik, [KI] Karten-Array: Karten verteilen
+    ├── move-cards.js      [Arun] Karten auswählen und auf das Spielfeld legen
+    ├── rules.js           [Arun] Spielregeln (Grundgerüst)
     ├── rules.html         [Arun] angelegt, noch leer
     └── images/            [Arun] Kartenbilder
         ├── blue/          one.PNG … ten.PNG
@@ -184,6 +186,46 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[Arun]** `game.css`: Die Bereiche werden per `grid-area` im 3 × 3-Raster platziert (`#playerDeckTop` 1/2, `#playerDeckLeft` 2/1, `#playArea` 2/2, `#playerDeckRight` 2/3, `#playerDeckBottom` 3/2). Dazu kommen Regeln für `body` (Grid mit `auto minmax(0, 1fr) auto`, Höhe `100dvh`) und `main` (`minmax`-Zeilen `1fr 4fr 1fr`, `gap: 8px`).
 - **[KI]** Neue Auffälligkeiten dazu stehen in Abschnitt 4 (Punkte 8 bis 12).
 
+### 3.14 Karten auswählen und auf das Spielfeld legen – [Arun], dokumentiert von [KI], 21.10.2026
+
+Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit `04b96cd`.
+
+**`game.html`**
+- **[Arun]** Jeder der vier Spielerbereiche (`playerDeckTop`, `Left`, `Right`, `Bottom`) enthält jetzt vier Unter-Container:
+  - `openCards<Seite>` (Klasse `openCards`) für die offenen Karten,
+  - `tenStack<Seite>` (Klasse `tenStack`) für den Zehnerstapel,
+  - `handCards<Seite>Closed` (Klasse `handCardsClosed`) für den verdeckten Handstapel,
+  - `handCards<Seite>Open` (Klasse `handCardsOpen`) für die aufgedeckten Handkarten.
+- **[Arun]** Neues `<script src="move-cards.js">` eingebunden (mit Tippfehler im Typ, siehe Abschnitt 4, Punkt 13).
+
+**`create-stack.js`**
+- **[Arun]** `createDOMStack()` hängt die Karten nicht mehr alle an `#playerDeckBottom`, sondern in die neuen Container:
+  - offene Karten in `#openCardsBottom`,
+  - Zehnerstapel in `#tenStackBottom`,
+  - Handkarten-Rückseite in `#handCardsBottomClosed`.
+
+**`game.css`**
+- **[Arun]** Neue Regel `.openCards`: Grid mit 3 gleich breiten Spalten und `gap: 2px`.
+
+**`move-cards.js` (neue Datei)**
+- **[Arun]** `laidCards`: Liste aller Karten, die schon auf dem Spielfeld liegen.
+- **[Arun]** `deleteFromStack(card, openCards, tenStack, handCards)`: Sucht die Karte per `id` in den drei Stapel-Arrays, entfernt sie mit `splice` und legt sie in `laidCards`.
+- **[Arun]** `moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards)`:
+  - bricht ab, wenn Karte oder Zielfeld fehlt,
+  - setzt die Karte auf `position: static` und hängt sie ans Zielfeld,
+  - entfernt sie aus den Daten-Arrays,
+  - war es eine Zehnerstapel-Karte, wird die nächste Karte im alten Container wieder klickbar (`pointerEvents = "auto"`).
+- **[Arun]** `clickCardStyle(lastCard)`: Setzt den Rahmen der zuvor gewählten Karte zurück auf `2px solid black`.
+
+**`main.js`**
+- **[Arun]** Importiert `move-cards.js` und holt `#openCardsBottom`, `#tenStackBottom`, `#handCardsBottomClosed` und `#playArea`. `activeField` merkt sich die gewählte Karte, `lastCard` die zuvor gewählte.
+- **[Arun]** Klick auf offene Karten oder Zehnerstapel: Nur `img`-Elemente zählen. Der Rahmen der alten Auswahl wird zurückgesetzt, die neue Karte bekommt einen grünen Rahmen (`5px solid green`) und wird zur aktiven Karte.
+- **[Arun]** Klick auf `#playArea`: Nur Felder der Klasse `playAreaField` zählen. Der Rahmen der aktiven Karte wird zurückgesetzt, `moveCardsToPlayArea(...)` legt die Karte ab, danach ist keine Karte mehr aktiv.
+- **[Arun]** Nach dem Aufruf von `createDOMStack(...)` ein Semikolon ergänzt.
+
+**`rules.js`**
+- **[Arun]** Bisher leer, enthält jetzt nur `import CARDS from "./create-stack.js";` als Vorbereitung für die Spielregeln (siehe Abschnitt 4, Punkt 14).
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -201,6 +243,15 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 11. Zehnerstapel: Die Container-Masse rechnen mit Bildgrösse 80 × 120 px und 2 px Versatz, die Bilder sind aber 60 × 90 px mit `i * 2.5` px Versatz. Der Container ist dadurch zu gross bzw. der Versatz wird nicht korrekt eingerechnet.
 12. Die Stapelkarten haben `width: 60px` / `height: 90px` zuzüglich 2 px Rahmen. Je nach `box-sizing` sind sie 4 px grösser als angegeben.
 
+13. `game.html`: `type="mdoule"` ist ein Tippfehler. Der Browser lädt das Script deshalb nicht als Modul. Das ist hier harmlos, weil `main.js` die Datei ohnehin importiert. Das Tag kann auch ganz weg.
+14. `rules.js`: `import CARDS from ...` ist ein Default-Import. `create-stack.js` hat keinen `export default`, das gibt einen Fehler, sobald `rules.js` geladen wird. Gemeint ist vermutlich `import { CARDS } from ...` (falls `CARDS` exportiert wird).
+15. `main.js`, Klick auf `#playArea`: Ist keine Karte gewählt (`activeField === null`), liefert `activeField.style` einen Fehler. Es fehlt eine Prüfung wie `if (!activeField) return;`.
+16. `moveCardsToPlayArea`: `const nextCard = previousStack` ist unbenutzt. Danach wird `nextCard` im `if`-Block neu deklariert. Zudem ist `nextCard` `null`, wenn die letzte Zehnerstapel-Karte gelegt wird, und `nextCard.style` löst dann einen Fehler aus.
+17. `.tenStackImage` und die Stapel-Container haben noch keine Regeln dafür, dass nur die oberste Karte klickbar ist. Nach `position: static` verliert die Karte ihr absolutes Layout. Ob sie im Spielfeld richtig sitzt, ist ungeprüft.
+18. Die Klick-Handler gibt es nur für den unteren Spieler (`...Bottom`). Die Handkarten (`handCardsBottomClosed`) sind noch nicht klickbar.
+19. In `main.js` steht ein `console.log(newLocation)` zum Debuggen, das später entfernt werden sollte.
+20. Es wird noch nicht geprüft, ob der Zug nach den Ligretto-Regeln erlaubt ist (gleiche Farbe, Wert +1). Jede Karte lässt sich auf jedes Feld legen, auch auf belegte.
+
 Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunden.
 
 ---
@@ -209,6 +260,8 @@ Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunde
 
 | Datum | Wer | Was |
 |---|---|---|
+| 21.10.2026 | [Arun] | `game.html`: vier Unter-Container je Spielerbereich; `create-stack.js`: Karten in die neuen Container; neue Datei `move-cards.js` (Karte ablegen, aus Stapel entfernen, Auswahl-Rahmen); `main.js`: Klick-Handler für Auswahl und Ablegen; `game.css`: `.openCards`-Grid; `rules.js`: Import (noch nicht committet) |
+| 21.10.2026 | [KI] | Änderungen von Arun als 3.14 dokumentiert, Auffälligkeiten 13 bis 20 notiert (am Code nichts geändert) |
 | 17.10.2026 | [Arun] | `index.html`: Farbwerte korrigiert; `create-stack.js`: Kartengrösse 60 × 90 px mit Rahmen, neue Funktion `createPlayeArea()`; `main.js`: Aufruf; `game.css`: `grid-area`, `body`, `main` (noch nicht committet) |
 | 17.10.2026 | [KI] | Änderungen von Arun als 3.13 dokumentiert, Abweichungen in 3.11/3.12 vermerkt, Auffälligkeiten 8 bis 12 notiert (am Code nichts geändert) |
 | 17.10.2026 | [KI] | Auf Wunsch von Arun: Alle Zehnerstapel-Karten mit 2 px Versatz darstellen, oberste Karte über zIndex festlegen, Zeigereingaben auf diese beschränken und Änderung dokumentieren. |
