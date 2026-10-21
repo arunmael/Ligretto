@@ -209,7 +209,9 @@ export function createStartStack (owner) {
 
 
 export function createDOMStack (openCards, tenStack, handCards) {
-    const playerDeckBottom = document.querySelector("#playerDeckBottom");
+    const openCardsBottom = document.querySelector("#openCardsBottom");
+    const tenStackBottom = document.querySelector("#tenStackBottom");
+    const handCardsBottomClosed = document.querySelector("#handCardsBottomClosed")
     const playerColor = sessionStorage.getItem("playerColor");
     console.log(`The player color is ${playerColor}`)
 
@@ -231,7 +233,7 @@ export function createDOMStack (openCards, tenStack, handCards) {
         newImage.setAttribute("height", "auto");
 
         newDiv.appendChild(newImage);
-        playerDeckBottom.appendChild(newDiv);
+        openCardsBottom.appendChild(newDiv);
         newImage.style.border = "2px solid black";
         newImage.style.borderRadius = "10px";
     };
@@ -282,7 +284,7 @@ export function createDOMStack (openCards, tenStack, handCards) {
         image.style.borderRadius = "10px"; // Behält die vorhandenen abgerundeten Kartenecken bei.
         newDiv.appendChild(image); // Fügt jede Karte zum gemeinsamen Stapelcontainer hinzu.
     }
-    playerDeckBottom.appendChild(newDiv);
+    tenStackBottom.appendChild(newDiv);
 
 
     //hand cards erstellen
@@ -318,7 +320,7 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
 
     newDiv.appendChild(newImage);
-    playerDeckBottom.appendChild(newDiv);
+    handCardsBottomClosed.appendChild(newDiv);
 
 }
 
