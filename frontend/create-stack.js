@@ -236,6 +236,10 @@ export function createDOMStack (openCards, tenStack, handCards) {
         openCardsBottom.appendChild(newDiv);
         newImage.style.border = "2px solid black";
         newImage.style.borderRadius = "10px";
+        newDiv.style.border = "2px solid black";
+        newDiv.style.borderRadius = "10px";
+        newDiv.style.width = "60px";
+        newDiv.style.height = "90px";
     };
     
     // tenStack erstellen

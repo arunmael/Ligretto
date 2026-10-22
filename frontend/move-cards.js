@@ -22,8 +22,11 @@ export function moveCardsToPlayArea (card, newLocation, openCards, tenStack, han
     deleteFromStack(card, openCards, tenStack, handCards);
     if (clickedCard.classList.contains("tenStackImage")) {
         const nextCard = previousStack.querySelector(".tenStackImage");
-        nextCard.style.pointerEvents = "auto"; 
+        if (nextCard) {
+            nextCard.style.pointerEvents = "auto"; 
+        }
     }
+    console.log(laidCards)
 
 }
 
@@ -32,3 +35,5 @@ export function clickCardStyle (lastCard) {
         return
     } else {lastCard.style.border = "2px solid black";};
 }
+
+

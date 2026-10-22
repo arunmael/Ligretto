@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const owner = sessionStorage.getItem("playerColor");
-
     const playerStartStacks = createStack.createStartStack(owner);
 
     createStack.createPlayArea();
@@ -28,11 +27,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     openCardsBottom.addEventListener("click", (event) => {
         const clickedCard = event.target;
-        if (!(clickedCard instanceof HTMLImageElement)) return;
+        const isTenStackCard = activeField?.classList.contains("tenStackImage") 
+        if (isTenStackCard === true && !(clickedCard.className === openCardsBottom.className)) {
+            activeField.style.border = "2px solid black";
+            const card = activeField;
+            const openCards = playerStartStacks.openCards;
+            const tenStack = playerStartStacks.tenStack;
+            const handCards = playerStartStacks.handCards;
+            moveCards.moveCardsToPlayArea(card, clickedCard, openCards, tenStack, handCards);
+            activeField = null;
+        } else if (!(clickedCard instanceof HTMLImageElement)) {
+            return
+        } else {
         moveCards.clickCardStyle(lastCard);
         clickedCard.style.border = "5px solid green";
         activeField = clickedCard;
-        lastCard = clickedCard;
+        lastCard = clickedCard;};
     });
 
     tenStackBottom.addEventListener("click", (event) => {
