@@ -34,8 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const openCards = playerStartStacks.openCards;
             const tenStack = playerStartStacks.tenStack;
             const handCards = playerStartStacks.handCards;
-            moveCards.moveCardsToPlayArea(card, clickedCard, openCards, tenStack, handCards);
+           for (const stack of [openCards, tenStack, handCards]) {
+                const index = stack.findIndex(entry => `image${entry.id}` === card.id); 
+        
+                if (index !== -1) { 
+                    const [removedCard] = stack.splice(index, 1);
+                    openCards.push(removedCard);
+                    moveCards.moveCardsToPlayArea(card, clickedCard, openCards, tenStack, handCards);
+                    break;
+
+                }
+            }
             activeField = null;
+            console.log(openCards)
+            console.log(moveCards.laidCards)
         } else if (!(clickedCard instanceof HTMLImageElement)) {
             return
         } else {

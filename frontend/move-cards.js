@@ -1,8 +1,11 @@
-let laidCards = [];
+export let laidCards = [];
+
+//todo wenn die Karte von tenStack nach openCards verschoben wird, darf sie nicht laidCards angefügt werden sondern muss den openCards angefügt werden.
 
 export function deleteFromStack(card, openCards, tenStack, handCards) {
     for (const stack of [openCards, tenStack, handCards]) {
-        const index = stack.findIndex(entry => entry.id === card.id); 
+        const index = stack.findIndex(entry => `image${entry.id}` === card.id); 
+        
         if (index !== -1) { 
             const [removedCard] = stack.splice(index, 1);
             laidCards.push(removedCard);

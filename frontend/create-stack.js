@@ -1,4 +1,4 @@
-const CARDS = [
+export const CARDS = [
   // blue deck
   { id: "blue-blue-1", owner: "blue", color: "blue", value: 1, alt: "Blau 1", src: "images/blue/one.PNG", back: "images/back/blue.PNG" },
   { id: "blue-blue-2", owner: "blue", color: "blue", value: 2, alt: "Blau 2", src: "images/blue/two.PNG", back: "images/back/blue.PNG" },

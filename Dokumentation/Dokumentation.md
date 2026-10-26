@@ -17,7 +17,7 @@ Jeder Abschnitt und jeder Eintrag ist mit einer dieser Markierungen versehen.
 
 **[Arun]** Ligretto ist ein Online-Multiplayer-Kartenspiel im Browser. Spielerinnen und Spieler können einen Raum (Room) erstellen oder über eine RoomID einem bestehenden Raum beitreten.
 
-**[KI]** Diese Dokumentation beschreibt den Stand vom 21.10.2026.
+**[KI]** Diese Dokumentation beschreibt den Stand vom 26.10.2026.
 
 ---
 
@@ -226,6 +226,25 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 **`rules.js`**
 - **[Arun]** Bisher leer, enthält jetzt nur `import CARDS from "./create-stack.js";` als Vorbereitung für die Spielregeln (siehe Abschnitt 4, Punkt 14).
 
+### 3.15 Zehnerstapel auf offene Karten, `isAllowed` – [Arun], dokumentiert von [KI], 26.10.2026
+
+Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit `8b7794a`.
+
+**`create-stack.js`**
+- **[Arun]** `CARDS` wird jetzt mit `export const` exportiert, damit andere Dateien (z. B. `rules.js`) darauf zugreifen können.
+
+**`move-cards.js`**
+- **[Arun]** `laidCards` wird exportiert (`export let`), damit `main.js` den Inhalt ausgeben kann.
+- **[Arun]** Die Suche in `deleteFromStack()` vergleicht jetzt `` `image${entry.id}` === card.id ``. Die Bild-Elemente tragen die Karten-ID mit dem Präfix `image`, der alte Vergleich `entry.id === card.id` hat deshalb nie getroffen.
+- **[Arun]** Ein `//todo`-Kommentar hält fest: Eine Karte, die vom Zehnerstapel zu den offenen Karten wandert, darf nicht in `laidCards` landen, sondern muss in `openCards` bleiben.
+
+**`main.js`**
+- **[Arun]** Klick auf die offenen Karten, während eine Zehnerstapel-Karte aktiv ist: Die Karte wird in `openCards`, `tenStack` und `handCards` gesucht, per `splice` entfernt, an `openCards` angehängt und dann mit `moveCardsToPlayArea(...)` ins Ziel-Element verschoben.
+- **[Arun]** Zwei `console.log`-Aufrufe (`openCards`, `moveCards.laidCards`) zum Prüfen des Zustands.
+
+**`rules.js`**
+- **[Arun]** Neue Funktion `isAllowed(lastCard, currentCard)` als Anfang der Regelprüfung (noch nicht aufgerufen, siehe Abschnitt 4, Punkte 21 bis 24).
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -251,6 +270,12 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 18. Die Klick-Handler gibt es nur für den unteren Spieler (`...Bottom`). Die Handkarten (`handCardsBottomClosed`) sind noch nicht klickbar.
 19. In `main.js` steht ein `console.log(newLocation)` zum Debuggen, das später entfernt werden sollte.
 20. Es wird noch nicht geprüft, ob der Zug nach den Ligretto-Regeln erlaubt ist (gleiche Farbe, Wert +1). Jede Karte lässt sich auf jedes Feld legen, auch auf belegte.
+21. `main.js` (neuer Block): Die Karte wird zuerst mit `splice` aus dem Array genommen und in `openCards` gepusht. Danach ruft `moveCardsToPlayArea` über `deleteFromStack` sie erneut aus `openCards` heraus und legt sie in `laidCards`. Das `//todo` in `move-cards.js` ist damit noch **nicht** gelöst: Die Karte ist am Ende in `laidCards` und nicht in `openCards`.
+22. `rules.js`, `isAllowed`: `newLocation` ist nirgends definiert (kein Parameter). Beim Aufruf gibt es einen `ReferenceError`. Gemeint ist vermutlich `lastCard`.
+23. `rules.js`, `isAllowed`: Die Bedingung `color !== color && value + 1` liefert `false`. Nach den Ligretto-Regeln wäre ein Zug aber **erlaubt**, wenn die Farbe **gleich** ist und der Wert um 1 **grösser** (also `true`). Die Rückgabewerte wirken vertauscht bzw. die Farbprüfung invertiert.
+24. `rules.js`: `import CARDS from ...` ist weiterhin ein Default-Import, `CARDS` ist jetzt aber ein benannter Export. Richtig wäre `import { CARDS } from ...` (siehe auch Punkt 14). `CARDS` wird in `rules.js` ausserdem nicht verwendet.
+25. `main.js`: Die `for`-Schleife ist mit 11 statt 12 Leerzeichen eingerückt und es fehlen Semikolons nach den `console.log`-Aufrufen. Das ist nur Stil, aber uneinheitlich.
+26. `main.js`: Die `console.log`-Aufrufe sind Debug-Ausgaben und sollten vor dem Abschluss entfernt werden (wie Punkt 19).
 
 Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunden.
 
@@ -260,6 +285,8 @@ Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunde
 
 | Datum | Wer | Was |
 |---|---|---|
+| 26.10.2026 | [Arun] | `create-stack.js`: `CARDS` exportiert; `move-cards.js`: `laidCards` exportiert, ID-Vergleich mit Präfix `image`, `//todo`; `main.js`: Zehnerstapel-Karte auf offene Karten verschieben; `rules.js`: `isAllowed` begonnen (noch nicht committet) |
+| 26.10.2026 | [KI] | Änderungen von Arun als 3.15 dokumentiert, Auffälligkeiten 21 bis 26 notiert (am Code nichts geändert) |
 | 21.10.2026 | [Arun] | `game.html`: vier Unter-Container je Spielerbereich; `create-stack.js`: Karten in die neuen Container; neue Datei `move-cards.js` (Karte ablegen, aus Stapel entfernen, Auswahl-Rahmen); `main.js`: Klick-Handler für Auswahl und Ablegen; `game.css`: `.openCards`-Grid; `rules.js`: Import (noch nicht committet) |
 | 21.10.2026 | [KI] | Änderungen von Arun als 3.14 dokumentiert, Auffälligkeiten 13 bis 20 notiert (am Code nichts geändert) |
 | 17.10.2026 | [Arun] | `index.html`: Farbwerte korrigiert; `create-stack.js`: Kartengrösse 60 × 90 px mit Rahmen, neue Funktion `createPlayeArea()`; `main.js`: Aufruf; `game.css`: `grid-area`, `body`, `main` (noch nicht committet) |
