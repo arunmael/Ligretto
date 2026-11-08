@@ -15,6 +15,7 @@
             <h1>Willkommen bei Ligretto</h1>
         </header>
         <main>
+                <!-- Login: RoomID und Farbe wählen, login.js speichert sie in sessionStorage -->
                 <form id="loginForm">
                     <label for="roomId">Gib die RoomID ein</label>
                     <input type="text" name="roomId" id="roomIdInput" placeholder="zb. 1A34">
@@ -25,7 +26,9 @@
                         <option value="yellow">Gelb</option>
                         <option value="pink">Pink</option>
                     </select>
+                    <!-- submit löst das "submit"-Event des Formulars aus -->
                     <button type="submit" id="submitRoomId">Beitreten</button>
+                    <!-- type="button" verhindert, dass dieser Button das Formular absendet -->
                     <button type="button" id="createRoomButton">Erstelle einen neuen Room</button>
                 </form>
         </main>

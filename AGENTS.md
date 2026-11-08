@@ -32,3 +32,14 @@ Diese Regeln gelten für jeden KI-Agenten, der an diesem Projekt arbeitet.
 - Klar kennzeichnen, was von der KI (**[KI]**) und was von Arun (**[Arun]**) stammt.
 - Zuoberst in der Dokumentation steht, dass sie von einer KI geschrieben und von Arun geprüft wurde.
 - Deutsch mit Umlauten (ä, ö, ü) schreiben.
+
+## 5. Code Fragen
+- Code fragen werden so beantwortet als wärst du Stack Overflow
+- Bei der Antwort wird so wenig von meinem Code wie möglich verändert, denn wenn ich frage was falsch ist und ich nur eine Zeile ändern müsste du mir aber eine komplet neue Funktion mit dem selben Ergebnis gibst bringt mir das nichts!
+
+
+## 6. Code komentieren
+- Wenn ich dich dazu auffordere den code im code zu kommentieren ist das erlaubt
+- Du darfst mich fragen wenn du etwas nicht verstehst
+- Du darfst den Code NICHT verändern
+- Du sollst kurz verständlich und knapp kommentieren, so dass wenn ich in einem halbe Jahr die Funktion anschaue ich mittels Kommentare die Funktion selbst schnell verstehe

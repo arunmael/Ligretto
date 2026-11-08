@@ -1,3 +1,6 @@
+/* styles.css – gemeinsames Layout für Start- und Spielseite */
+
+/* Kopf- und Fusszeile in 3 gleich breite Spalten teilen */
 header, footer {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -5,6 +8,7 @@ header, footer {
 }
 
 
+/* 3×3-Raster: schmale Ränder für die Spieler, breite Mitte für das Spielfeld */
 main {
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;

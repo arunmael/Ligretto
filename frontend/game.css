@@ -1,3 +1,6 @@
+/* game.css – Spielseite */
+
+/* Spieler oben/unten: 6 Elemente nebeneinander */
 #playerDeckTop, #playerDeckBottom {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -5,20 +8,24 @@
 }
 
 
+/* Spieler links/rechts: 6 Elemente untereinander */
 #playerDeckLeft, #playerDeckRight {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     gap: 4px;
 }
+/* Position im 3×3-Raster von main (Zeile / Spalte) */
 #playerDeckTop { grid-area: 1 / 2; } 
 #playerDeckLeft { grid-area: 2 / 1; }
 #playArea { grid-area: 2 / 2; }
 #playerDeckRight { grid-area: 2 / 3; }
 #playerDeckBottom { grid-area: 3 / 2; }
 
+/* Hinweis: doppelt, steht schon oben */
 #playArea {grid-area: 2 / 2;}
 
 
+/* Seite genau bildschirmhoch; minmax(0, …) erlaubt dem Inhalt zu schrumpfen statt überzulaufen */
 body {
     margin: 0;
     height: 100dvh; 
@@ -26,6 +33,7 @@ body {
     grid-template-rows: auto minmax(0, 1fr) auto; 
 }
 
+/* Zeilen des Spielfelds: Spieler oben/unten schmal, Mitte 4× so hoch */
 main { 
     display: grid;
     min-height: 0;
@@ -34,6 +42,7 @@ main {
     gap: 2px;
 }
 
+/* offene Karten in 3 Spalten nebeneinander */
 .openCards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

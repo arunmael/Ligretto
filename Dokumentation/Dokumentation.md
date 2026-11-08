@@ -17,7 +17,7 @@ Jeder Abschnitt und jeder Eintrag ist mit einer dieser Markierungen versehen.
 
 **[Arun]** Ligretto ist ein Online-Multiplayer-Kartenspiel im Browser. Spielerinnen und Spieler können einen Raum (Room) erstellen oder über eine RoomID einem bestehenden Raum beitreten.
 
-**[KI]** Diese Dokumentation beschreibt den Stand vom 26.10.2026.
+**[KI]** Diese Dokumentation beschreibt den Stand vom 08.11.2026.
 
 ---
 
@@ -245,6 +245,53 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 **`rules.js`**
 - **[Arun]** Neue Funktion `isAllowed(lastCard, currentCard)` als Anfang der Regelprüfung (noch nicht aufgerufen, siehe Abschnitt 4, Punkte 21 bis 24).
 
+### 3.16 Code kommentiert – [KI], 08.11.2026
+
+- Auf Wunsch von **[Arun]** hat die KI den ganzen Code kommentiert (gemäss `AGENTS.md`, Regel 6): `main.js`, `rules.js`, `move-cards.js`, `login.js`, `create-stack.js`, `game.html`, `index.html`, `styles.css`, `login.css`, `game.css`.
+- **[KI]** Es wurden nur Kommentare ergänzt, am Code selbst wurde nichts geändert. Geprüft wurde das per Vergleich des Codes ohne Kommentare mit dem vorherigen Stand. Ausnahme: Beim Neuschreiben von `main.js`, `rules.js`, `move-cards.js` und `login.js` sind Leerzeichen am Zeilenende weggefallen.
+- **[KI]** Erster Versuch: fast jede Zeile kommentiert. **[Arun]** wollte das nicht, sondern Kommentare wie in einem produktiven Projekt. Deshalb neu:
+  - JS: ein Kopfkommentar pro Datei, ein JSDoc-Block (`/** … */`) über jeder Funktion bzw. jedem Event-Handler (was sie macht, Parameter, Rückgabe) und Inline-Kommentare nur bei nicht selbsterklärenden Zeilen (z. B. `slice(5)`, `position = "static"`).
+  - HTML/CSS: kurze Abschnittskommentare über den Blöcken bzw. Regeln.
+  - Bekannte Fehler sind im Code mit `FIXME` markiert (`localStorage` statt `sessionStorage`, `activeField === null`, Schleife ab 1 bei den offenen Karten, keine Farbe bei „Room erstellen“, Karte landet in `laidCards` statt `openCards`). In `game.css` steht bei der doppelten `#playArea`-Regel ein Hinweis.
+- **[KI]** Dieser neue Eintrag wartet noch auf die Prüfung durch Arun.
+
+### 3.17 Zehnerstapel-Karte in offenen Karten behalten – [KI], 08.11.2026
+
+- **[Arun]** Hat den Einbau des zuvor vorgeschlagenen Parameters freigegeben.
+- **[KI]** `moveCardsToPlayArea()` erhält `updateStacks = true`. Nur bei aktivierter Option wird `deleteFromStack()` aufgerufen; bestehende Aufrufe fürs Spielfeld behalten ihr Verhalten.
+- **[KI]** Beim Verschieben vom Zehnerstapel zu den offenen Karten übergibt `main.js` jetzt `false`, weil dort die Arrays bereits aktualisiert wurden. Die Karte bleibt in `openCards` und wird nicht zusätzlich nach `laidCards` verschoben. Das Freischalten der nächsten Zehnerstapel-Karte bleibt erhalten.
+- **[KI]** Bisherige Codezeilen bleiben auskommentiert erhalten. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.17 Spielregeln eingebaut und Fehler behoben – [Arun], dokumentiert von [KI], 08.11.2026
+
+Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit `774ec17`.
+
+**`rules.js`**
+- **[Arun]** Import korrigiert: `import { CARDS } from ...` (benannter statt Default-Import).
+- **[Arun]** Neue Funktionen `getNumber(card)` und `getColor(card)`: Sie schneiden das Präfix `image` von der Bild-ID ab und schlagen Wert bzw. Farbe der Karte in `CARDS` nach.
+- **[Arun]** `isAllowed(targetCard, currentCard)` neu geschrieben: Erlaubt ist ein Zug, wenn die Farbe gleich ist und der Wert genau um 1 höher. Ohne Zielkarte (`null`) ist nur eine 1 erlaubt.
+
+**`main.js`**
+- **[Arun]** Importiert `rules.js`.
+- **[Arun]** Klick auf eine liegende Karte im Spielfeld: Die Karte wird nur gelegt, wenn `rules.isAllowed(...)` `true` liefert, sonst erscheint `not Allowed` in der Konsole.
+- **[Arun]** Klick auf ein leeres Feld: Nur eine Karte mit Wert 1 darf gelegt werden.
+- **[Arun]** `#joinOtherRoom` löscht `playerColor` und `roomId` jetzt aus `sessionStorage` statt aus `localStorage`.
+- **[Arun]** Zehnerstapel-Karte auf offene Karte: `moveCardsToPlayArea(..., false)` wird aufgerufen, damit die Karte in `openCards` bleibt.
+
+**`move-cards.js`**
+- **[Arun]** `moveCardsToPlayArea` hat einen neuen Parameter `updateStacks = true`. Bei `false` wird `deleteFromStack()` übersprungen, die Karte landet also nicht in `laidCards`. Damit ist das `//todo` gelöst.
+
+**`login.js`**
+- **[Arun]** „Erstelle einen neuen Room“ speichert jetzt auch `playerColor` und `roomId` in `sessionStorage`.
+
+**`AGENTS.md`**
+- **[Arun]** Neue Regel 5 „Code Fragen“: wie auf Stack Overflow antworten und möglichst wenig vom Code ändern.
+- **[Arun]** Neue Regel 6 „Code kommentieren“: Kommentieren nur auf Aufforderung, Code dabei nicht verändern, kurz und verständlich.
+
+**[KI]** Dadurch veraltete Kommentare (am Code wurde nichts geändert, das entscheidest du, Arun):
+- `login.js`: Das `FIXME` über `createRoomButton` stimmt nicht mehr, die Farbe wird jetzt gespeichert.
+- `move-cards.js`: Das `//todo` ist gelöst und kann weg. Im JSDoc von `moveCardsToPlayArea` fehlt der neue Parameter `updateStacks`.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -277,7 +324,15 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 25. `main.js`: Die `for`-Schleife ist mit 11 statt 12 Leerzeichen eingerückt und es fehlen Semikolons nach den `console.log`-Aufrufen. Das ist nur Stil, aber uneinheitlich.
 26. `main.js`: Die `console.log`-Aufrufe sind Debug-Ausgaben und sollten vor dem Abschluss entfernt werden (wie Punkt 19).
 
-Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunden.
+27. `login.js`: Bei „Erstelle einen neuen Room“ wird `playerColor` nicht gespeichert, auf `game.html` ist die Farbe dann `null`.
+28. `main.js`: `#joinOtherRoom` löscht Einträge aus `localStorage`, gespeichert wurden sie aber in `sessionStorage`.
+29. `main.js`: `console.log("Not allowed")` stand nach dem `return` und wurde gerade dann ausgegeben, wenn der Zug erlaubt war. **[Arun]** hat die Zeile inzwischen entfernt (erledigt).
+
+30. `main.js`: Eine Zehnerstapel-Karte wird mit `appendChild` in die angeklickte offene Karte gehängt. Ist das ein `img`, wird ein Kind-Element darin nicht angezeigt. Nur ein Klick auf den Rand des `div` funktioniert (ungeprüft). Ausserdem bleibt die überdeckte offene Karte in `openCards`, das Array wird also jedes Mal grösser.
+31. `rules.js`, `isAllowed`: Ist `targetCard` `null` und die Karte keine 1, ruft der `else if`-Zweig `getColor(null)` auf und erzeugt einen Fehler. `main.js` übergibt aktuell nie `null`, deshalb fällt das noch nicht auf.
+32. `main.js`: Wird auf ein leeres Feld eine Karte gelegt, die keine 1 ist, endet die Funktion mit `return`, bevor `activeField = null` gesetzt wird. Der Rahmen ist dann schwarz, die Karte aber noch ausgewählt.
+
+Erledigt seit der letzten Version: Punkte 14, 22, 23, 24 (Import und Logik in `rules.js`), 20 (Regelprüfung beim Ablegen), 21 (Karte bleibt in `openCards`), 27 (Farbe bei „Room erstellen“), 28 (`sessionStorage` beim Zurückgehen). Früher schon: `login.js` wird nicht mehr doppelt eingebunden.
 
 ---
 
@@ -285,6 +340,10 @@ Erledigt seit der letzten Version: `login.js` wird nicht mehr doppelt eingebunde
 
 | Datum | Wer | Was |
 |---|---|---|
+| 08.11.2026 | [Arun] | `rules.js`: `getNumber`, `getColor`, `isAllowed` neu; `main.js`: Regelprüfung beim Ablegen, `sessionStorage` beim Zurückgehen, Karte bleibt in `openCards`; `move-cards.js`: Parameter `updateStacks`; `login.js`: Farbe auch bei „Room erstellen“ speichern; `AGENTS.md`: Regeln 5 und 6 (noch nicht committet) |
+| 08.11.2026 | [KI] | Änderungen von Arun als 3.17 dokumentiert, erledigte Punkte vermerkt, Auffälligkeiten 30 bis 32 notiert (am Code nichts geändert) |
+| 08.11.2026 | [KI] | Mit Freigabe von Arun: Parameter `updateStacks` und Aufruf mit `false` eingebaut, damit Zehnerstapel-Karten beim Verschieben zu offenen Karten in `openCards` bleiben; als 3.17 dokumentiert. Punkt 21 ist damit behoben. |
+| 08.11.2026 | [KI] | Auf Wunsch von Arun: ganzer Code (JS, HTML, CSS) kommentiert, danach auf Wunsch von Arun auf Funktions-Kommentare (JSDoc) reduziert; Code nicht verändert; als 3.16 dokumentiert |
 | 26.10.2026 | [Arun] | `create-stack.js`: `CARDS` exportiert; `move-cards.js`: `laidCards` exportiert, ID-Vergleich mit Präfix `image`, `//todo`; `main.js`: Zehnerstapel-Karte auf offene Karten verschieben; `rules.js`: `isAllowed` begonnen (noch nicht committet) |
 | 26.10.2026 | [KI] | Änderungen von Arun als 3.15 dokumentiert, Auffälligkeiten 21 bis 26 notiert (am Code nichts geändert) |
 | 21.10.2026 | [Arun] | `game.html`: vier Unter-Container je Spielerbereich; `create-stack.js`: Karten in die neuen Container; neue Datei `move-cards.js` (Karte ablegen, aus Stapel entfernen, Auswahl-Rahmen); `main.js`: Klick-Handler für Auswahl und Ablegen; `game.css`: `.openCards`-Grid; `rules.js`: Import (noch nicht committet) |

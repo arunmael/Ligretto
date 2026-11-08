@@ -1,3 +1,13 @@
+/**
+ * create-stack.js – Kartendaten, Verteilen der Startstapel und Aufbau von
+ * Spielerstapeln und Spielfeld im DOM.
+ */
+
+/**
+ * Alle 160 Karten: 4 Besitzer (Rückseitenfarbe) × 4 Farben × Werte 1–10.
+ * ID-Format "besitzer-farbe-wert", z. B. "yellow-green-5". Die Bilder im DOM
+ * tragen die ID mit Präfix "image" (z. B. "imageyellow-green-5").
+ */
 export const CARDS = [
   // blue deck
   { id: "blue-blue-1", owner: "blue", color: "blue", value: 1, alt: "Blau 1", src: "images/blue/one.PNG", back: "images/back/blue.PNG" },
@@ -168,26 +178,38 @@ export const CARDS = [
   { id: "yellow-yellow-10", owner: "yellow", color: "yellow", value: 10, alt: "Gelb 10", src: "images/yellow/ten.PNG", back: "images/back/yellow.PNG" },
 ];
 
+/**
+ * Liefert die 40 Karten eines Spielers.
+ * @param {string} owner  Spielerfarbe ("blue", "green", "pink", "yellow")
+ */
 export function getDeck(owner) {
   return CARDS.filter(card => card.owner === owner);
 }
 
 
+/**
+ * Verteilt das Deck eines Spielers auf die Startstapel:
+ * 4 zufällige offene Karten, 10 zufällige Karten im Zehnerstapel,
+ * die restlichen 26 gemischt als Handkarten.
+ * @param {string} owner  Spielerfarbe
+ * @returns {{openCards: object[], tenStack: object[], handCards: object[]}}
+ */
 export function createStartStack (owner) {
     let cards = getDeck(owner);
 
     let openCards = [];
     let tenStack = [];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 13; i++) {
         let index = Math.floor(Math.random() * cards.length);
         let card = cards[index];
 
+        // bereits gezogene Karte → neu ziehen, damit keine Karte doppelt vorkommt
         while (openCards.includes(card) || tenStack.includes(card)) {
             index = Math.floor(Math.random() * cards.length);
             card = cards[index];
         };
 
-        if (i >= 4) {
+        if (i >= 3) {
             tenStack.push(card)
         } else {
             openCards.push(card)
@@ -196,6 +218,7 @@ export function createStartStack (owner) {
 
     let handCards = cards.filter(card => !openCards.includes(card) && !tenStack.includes(card));
 
+    // Handkarten mischen (Fisher-Yates)
     for (let i = handCards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [handCards[i], handCards[j]] = [handCards[j], handCards[i]];
@@ -208,6 +231,12 @@ export function createStartStack (owner) {
  };
 
 
+/**
+ * Zeigt die Stapel des eigenen Spielers im unteren Spielerbereich an:
+ * offene Karten, Zehnerstapel (versetzt übereinander, nur die oberste klickbar)
+ * und den verdeckten Handstapel (Rückseite in der Spielerfarbe).
+ * Die Spielerfarbe kommt aus sessionStorage.
+ */
 export function createDOMStack (openCards, tenStack, handCards) {
     const openCardsBottom = document.querySelector("#openCardsBottom");
     const tenStackBottom = document.querySelector("#tenStackBottom");
@@ -217,7 +246,7 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
 
     // open cards erstellen
-    for (let i = 1; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
         const newDiv = document.createElement("div");
         const newImage = document.createElement("img");
 
@@ -310,6 +339,7 @@ export function createDOMStack (openCards, tenStack, handCards) {
     newImage.style.border = "2px solid black";
     newImage.style.borderRadius = "10px";
 
+    // Die blaue Rückseite ist im Querformat und wird deshalb gedreht
     if (playerColor === "blue") { 
         newImage.style.width = "90px"; 
         newImage.style.height = "60px";
@@ -330,6 +360,10 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
 
 
+/**
+ * Erzeugt im Spielfeld (#playArea) ein 4 × 4-Raster aus 16 leeren Ablagefeldern
+ * mit der Klasse "playAreaField" (daran erkennt main.js ein gültiges Ziel).
+ */
 // überall die Zahl 4 durch eine Anzahl Spieler Variable ersetzen
 export function createPlayArea() {
     const playArea = document.querySelector("#playArea");

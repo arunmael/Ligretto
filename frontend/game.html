@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
 
+        <!-- main.js startet die Spielseite und importiert selbst create-stack.js und move-cards.js -->
         <script type="module" src="main.js"></script>
         <script type="module" src="create-stack.js"></script>
         <script type="module" src="move-cards.js"></script>
@@ -13,11 +14,14 @@
         <link rel="stylesheet" href="game.css">
     </head>
     <body>
+        <!-- Kopfzeile mit Button zurück zur Startseite -->
         <header>
             <h1>Los gehts</h1>
             <button type="button" id="joinOtherRoom">Trette einem anderen Room bei</button>
         </header>
+        <!-- Spielfeld: 3×3-Raster, Spieler oben/links/rechts/unten, gemeinsames Spielfeld in der Mitte -->
         <main>
+            <!-- Jeder Spielerbereich: offene Karten, Zehnerstapel, verdeckte und aufgedeckte Handkarten -->
             <div class="playerDeck" id="playerDeckTop">
                 <div class="openCards" id="openCardsTop"></div>
                 <div class="tenStack" id="tenStackTop"></div>
@@ -32,6 +36,7 @@
                 <div class="handCardsOpen" id="handCardsLeftOpen"></div>
             </div>
 
+            <!-- gemeinsames Spielfeld, die 16 Felder erzeugt createPlayArea() -->
             <div id="playArea">
             </div>
 
@@ -42,6 +47,7 @@
                 <div class="handCardsOpen" id="handCardsRightOpen"></div>
             </div>
 
+            <!-- eigener Spieler: nur dieser Bereich wird bisher von createDOMStack() befüllt -->
             <div class="playerDeck" id="playerDeckBottom">
                 <div class="openCards" id="openCardsBottom"></div>
                 <div class="tenStack" id="tenStackBottom"></div>
