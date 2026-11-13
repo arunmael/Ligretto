@@ -43,3 +43,99 @@ Diese Regeln gelten für jeden KI-Agenten, der an diesem Projekt arbeitet.
 - Du darfst mich fragen wenn du etwas nicht verstehst
 - Du darfst den Code NICHT verändern
 - Du sollst kurz verständlich und knapp kommentieren, so dass wenn ich in einem halbe Jahr die Funktion anschaue ich mittels Kommentare die Funktion selbst schnell verstehe
+
+## 7. Bug Check bei Doku und Commit Messages
+
+### Wann
+Diesen Ablauf **jedes Mal** komplett durchführen, bevor du etwas anderes machst, wenn ich dich bitte:
+* zu dokumentieren, oder
+* eine Commit Message zu schreiben.
+
+Kein Schritt darf übersprungen werden, auch nicht bei kleinen Änderungen.
+
+### Grundregeln
+1. **Du veränderst keinen Code.** Auch nicht kurz zum Testen und danach wieder zurück. Kein `git stash`, kein `git checkout`, kein `git reset`, kein Formatter, kein Autofix.
+2. Die einzige Datei, die du in diesem Ablauf ändern darfst, ist `Bugs.md` im Root des Projekts. Existiert sie nicht, legst du sie an.
+3. Du darfst Tests und den Build laufen lassen, um Bugs zu bestätigen oder zu prüfen, ob ein alter Bug gefixt ist. Danach muss der Projektzustand exakt gleich sein wie vorher: Vergleiche `git status` vor und nach dem Ablauf. Einziger erlaubter Unterschied ist `Bugs.md`.
+4. Du fixt keine Bugs. Du findest, erklärst und dokumentierst sie nur.
+5. Erfinde keine Bugs. Wenn du dir nicht sicher bist, markiere den Eintrag als **Verdacht** und schreib, was dafür und dagegen spricht.
+6. Alles auf Deutsch.
+
+### Ablauf
+
+**Schritt 1: Änderungen sammeln**
+Geprüft wird alles, was noch nicht committet ist:
+* `git diff` (unstaged)
+* `git diff --staged` (staged)
+* neue, ungetrackte Dateien: `git ls-files --others --exclude-standard`
+
+`Bugs.md` selbst gehört nicht dazu. Lies bei Bedarf den umliegenden Code, damit du die Änderungen im Kontext verstehst.
+
+**Schritt 2: Neue Änderungen prüfen**
+Prüfe die Änderungen auf:
+* **Bugs:** falsche Logik, falsche Bedingungen, Off by one, falsche Rückgabewerte, nicht behandelte Fehler, Race Conditions, Speicher oder Ressourcen Leaks, kaputte Aufrufe von anderem Code.
+* **Edge Cases:** leere Eingaben, `null` / `nil` / `undefined`, sehr grosse oder negative Werte, Sonderzeichen, gleichzeitige Zugriffe, Netzwerk oder Dateifehler, erster und letzter Durchlauf.
+* **Security Lücken:** Injection (SQL, Command, HTML/XSS), fehlende Eingabevalidierung, unsichere Authentifizierung oder Autorisierung, Secrets oder Keys im Code, unsichere Dateipfade (Path Traversal), unsichere Abhängigkeiten, sensible Daten in Logs.
+
+**Schritt 3: Alte Einträge in `Bugs.md` prüfen**
+Prüfe **jeden** offenen Eintrag gegen den aktuellen Code (nicht nur gegen den Diff):
+* **Gefixt:** Eintrag komplett aus `Bugs.md` löschen.
+* **Noch offen:** Eintrag aktualisieren. Zeilennummern, Funktions oder Klassennamen, Beschreibung und Schweregrad an den aktuellen Stand anpassen. Zeilen verschieben sich, also immer neu nachschauen.
+* **Nicht eindeutig:** Eintrag drin lassen und im Chat sagen, warum du es nicht sicher beurteilen kannst.
+
+**Schritt 4: Neue Bugs in `Bugs.md` eintragen**
+Jeder neu gefundene Bug kommt als eigener Eintrag rein und bleibt drin, bis er gefixt ist.
+
+**Schritt 5: Bericht im Chat**
+Siehe Format unten.
+
+**Schritt 6: Commit Message (nur wenn ich danach gefragt habe)**
+Erst nach dem Bericht. Die Message beschreibt die eigentlichen Änderungen. Am Ende ein kurzer Hinweis auf offene Bugs, z.B.:
+
+```
+Offene Bugs: BUG-004 (kritisch), BUG-007 (mittel), siehe Bugs.md
+```
+
+Wenn es keine offenen Bugs gibt, entfällt der Hinweis.
+
+### Schweregrad
+* **Kritisch:** Security Lücke, Datenverlust, Absturz oder Hauptfunktion kaputt.
+* **Mittel:** Falsches Verhalten in bestimmten Fällen, Edge Case mit spürbaren Folgen.
+* **Klein:** Seltener Edge Case, kleine Unschönheit mit wenig Auswirkung.
+
+Security Lücken sind mindestens **Mittel**, im Zweifel **Kritisch**.
+
+### Format von `Bugs.md`
+IDs fortlaufend vergeben (`BUG-001`, `BUG-002`, ...). Eine ID wird nie wiederverwendet, auch wenn der Bug gelöscht wurde. Damit du die nächste freie ID kennst, steht oben im File ein Zähler. Einträge nach Schweregrad sortieren, Kritisch zuoberst.
+
+```markdown
+# Bugs
+
+Nächste freie ID: BUG-008
+
+## BUG-004: Kurzer, klarer Titel
+* **Schweregrad:** Kritisch
+* **Typ:** Bug / Edge Case / Security
+* **Status:** Bestätigt / Verdacht
+* **Gefunden am:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-13
+* **Betroffen:**
+  * `src/api/user.ts`, Zeilen 42 bis 58, Funktion `updateUser()`
+  * `src/db/query.ts`, Zeile 17, Funktion `runQuery()`
+* **Was ist das Problem:** Was genau falsch läuft und was der Nutzer davon merkt.
+* **Wieso tritt es auf:** Die technische Ursache, Schritt für Schritt.
+* **Wann tritt es auf:** Konkretes Beispiel oder Eingabe, die den Bug auslöst.
+```
+
+Wenn `Bugs.md` keine offenen Bugs mehr hat, bleibt das File mit Titel und Zähler bestehen und darunter steht `Keine offenen Bugs.`
+
+### Format des Chat Berichts
+Immer in dieser Reihenfolge:
+
+1. **Neu gefunden:** Jeder Bug ausführlich mit allen Feldern wie in `Bugs.md`: was das Problem ist, wieso es auftritt, wann es auftritt und **ganz genau welche Zeilen in welchem File** betroffen sind.
+2. **Gelöst und aus `Bugs.md` entfernt:** ID, Titel und ein Satz, woran du erkennst, dass es gefixt ist.
+3. **Weiterhin offen:** ID, Titel, Schweregrad und aktuelle Zeilen. Ausführlich nur, wenn sich am Bug etwas verändert hat.
+4. **Nicht eindeutig:** Falls vorhanden, mit Begründung.
+5. **Ausgeführte Befehle:** Welche Tests oder Builds du laufen gelassen hast und bestätigen, dass `git status` danach gleich ist wie vorher (bis auf `Bugs.md`).
+
+Wenn nichts gefunden wurde, sag das klar, statt etwas zu erfinden.

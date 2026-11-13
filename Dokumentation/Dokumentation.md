@@ -17,7 +17,7 @@ Jeder Abschnitt und jeder Eintrag ist mit einer dieser Markierungen versehen.
 
 **[Arun]** Ligretto ist ein Online-Multiplayer-Kartenspiel im Browser. Spielerinnen und Spieler können einen Raum (Room) erstellen oder über eine RoomID einem bestehenden Raum beitreten.
 
-**[KI]** Diese Dokumentation beschreibt den Stand vom 08.11.2026.
+**[KI]** Diese Dokumentation beschreibt den Stand vom 13.11.2026 (Backend: `backend/cards.py` und `backend/logic/shuffle.py`).
 
 ---
 
@@ -30,7 +30,12 @@ Ligretto/
 ├── AGENTS.md              [KI] Regeln für KI-Agenten
 ├── Dokumentation/
 │   └── Dokumentation.md   [KI] diese Datei
-├── backend/               [Arun] Ordner angelegt, noch leer
+├── backend/               [Arun] Backend-Ordner
+│   ├── cards.py           [Arun] Datei angelegt, [KI] Kartenliste eingefügt
+│   ├── connection/        [Arun] angelegt, noch leer (wird von Git noch nicht erfasst)
+│   └── logic/
+│       ├── rules.py       [Arun] angelegt, noch leer
+│       └── shuffle.py     [Arun] Spielerkarten mischen und auf drei Stapel verteilen, [KI] Docstrings
 └── frontend/
     ├── index.html         [Arun] Startseite / Login
     ├── login.css          [Arun] Styles für die Startseite
@@ -292,6 +297,38 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - `login.js`: Das `FIXME` über `createRoomButton` stimmt nicht mehr, die Farbe wird jetzt gespeichert.
 - `move-cards.js`: Das `//todo` ist gelöst und kann weg. Im JSDoc von `moveCardsToPlayArea` fehlt der neue Parameter `updateStacks`.
 
+### 3.18 Python-Kartenliste `backend/cards.py` – [KI], 13.11.2026
+
+- **[Arun]** Hat die Datei angelegt und das Einfügen der Karten sowie die Dokumentation beauftragt.
+- **[KI]** (Codex) hat alle 160 Karten aus `frontend/create-stack.js` in `backend/cards.py` als `CARDS` eingefügt: eine Python-Liste mit einem Dictionary pro Karte. Alle sieben Eigenschaften und die Reihenfolge bleiben erhalten.
+- **[KI]** Jede neue Codezeile ist kommentiert. Die Frontend-Liste bleibt bestehen, da sie dort weiterhin verwendet wird; eine Anbindung an das Backend ist noch nicht Teil dieser Änderung.
+- **[KI]** Die Python-Syntax und die vollständige Übereinstimmung mit den 160 Frontend-Karten wurden geprüft. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.19 Kommentare in `backend/logic/shuffle.py` – [KI], 13.11.2026
+
+- **[Arun]** Hat kurze Kommentare im Code beauftragt.
+- **[KI]** (Codex) hat die Auswahl der Spielerkarten, das Mischen und die Aufteilung auf die drei Stapel kommentiert. Der ausführbare Code blieb unverändert; dies wurde durch einen Vergleich der Python-Syntaxbäume geprüft.
+- **[KI]** Der noch vorhandene Fehler `openCards.append[i]` ist im Code als Kommentar erklärt, aber nicht korrigiert: Der Methodenaufruf benötigt `openCards.append(i)`.
+- **[KI]** Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.20 Docstrings in `backend/logic/shuffle.py` – [KI], 13.11.2026
+
+- **[Arun]** Wünscht weniger Kommentare und stattdessen Docstrings.
+- **[KI]** (Codex) hat die zuvor ergänzten Kommentare durch kurze Docstrings der drei Funktionen ersetzt. Die Beschreibung von `getDivideStack()` enthält die Stapelgrössen, die Rückgabereihenfolge und den Hinweis auf den weiterhin vorhandenen Fehler `openCards.append[i]`.
+- **[KI]** Die Funktionslogik blieb unverändert; geprüft durch Vergleich der Syntaxbäume ohne Docstrings. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.21 Backend-Grundgerüst und Kartenverteilung in Python – [Arun], dokumentiert von [KI], 13.11.2026
+
+- **[Arun]** Ordnerstruktur im Backend angelegt: `backend/logic/` für die Spiellogik, `backend/connection/` für die spätere Verbindung zum Frontend (noch leer) und `backend/logic/rules.py` (noch leer).
+- **[Arun]** `backend/logic/shuffle.py` geschrieben, die Python-Version der Kartenverteilung aus `create-stack.js`:
+  - `getPlayerCards(CARDS, playerColor)` gibt alle Karten zurück, deren `owner` der Spielerfarbe entspricht (40 Karten pro Farbe).
+  - `shuffleDeck(CARDS, playerColor)` mischt diese Karten mit `random.shuffle`.
+  - `getDivideStack(CARDS, playerColor)` verteilt die gemischten Karten auf Zehnerstapel (10), offene Karten (3) und Handkarten (27) und gibt sie in dieser Reihenfolge zurück.
+- **[Arun]** Den Fehler `openCards.append[i]` aus 3.19/3.20 behoben (jetzt `openCards.append(i)`) und den Hinweis darauf aus dem Docstring entfernt.
+- **[Arun]** Imports ergänzt: `from random import *` für `shuffle()` und `from .. cards import CARDS` für die Kartenliste.
+- **[KI]** Geprüft: Ruft man `getDivideStack(CARDS, "blue")` aus dem Projektordner auf, kommen 10, 3 und 27 Karten zurück, alle mit `owner` `"blue"`. Der direkte Aufruf `python3 backend/logic/shuffle.py` bricht dagegen ab (siehe Punkt 33).
+- **[KI]** Ein venv wird noch nicht gebraucht, weil nur die Standardbibliothek (`random`) verwendet wird. Sobald ein Paket mit `pip` installiert wird (z. B. für `connection/`), sollte eines angelegt und `.venv/` in die `.gitignore` aufgenommen werden.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -332,7 +369,15 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 31. `rules.js`, `isAllowed`: Ist `targetCard` `null` und die Karte keine 1, ruft der `else if`-Zweig `getColor(null)` auf und erzeugt einen Fehler. `main.js` übergibt aktuell nie `null`, deshalb fällt das noch nicht auf.
 32. `main.js`: Wird auf ein leeres Feld eine Karte gelegt, die keine 1 ist, endet die Funktion mit `return`, bevor `activeField = null` gesetzt wird. Der Rahmen ist dann schwarz, die Karte aber noch ausgewählt.
 
-Erledigt seit der letzten Version: Punkte 14, 22, 23, 24 (Import und Logik in `rules.js`), 20 (Regelprüfung beim Ablegen), 21 (Karte bleibt in `openCards`), 27 (Farbe bei „Room erstellen“), 28 (`sessionStorage` beim Zurückgehen). Früher schon: `login.js` wird nicht mehr doppelt eingebunden.
+33. `shuffle.py`: `from .. cards import CARDS` ist ein relativer Import. Er funktioniert nur, wenn die Datei als Teil des Pakets geladen wird (z. B. `python3 -m backend.logic.shuffle` aus dem Projektordner). Bei `python3 backend/logic/shuffle.py` kommt `ImportError: attempted relative import with no known parent package`.
+34. `shuffle.py`: `from random import *` holt alle Namen aus `random` in die Datei. Gebraucht wird nur `shuffle`, `from random import shuffle` wäre eindeutiger.
+35. `shuffle.py`: Die Funktionsparameter heissen ebenfalls `CARDS` und überdecken die importierte Liste. Das ist kein Fehler, aber der Import wird dadurch innerhalb der Funktionen nie benutzt.
+36. `shuffle.py`, `getPlayerCards`: Der `counter` ist unnötig. `i` ist bereits die Karte, `i["owner"]` reicht statt `CARDS[counter]["owner"]`. Auch in `getDivideStack` ist `counter >= 10 and` doppelt, weil der erste Zweig das schon ausschliesst. Der Tippfehler `shuffeldCards` ist nur kosmetisch.
+37. `.gitignore`: Python-Einträge wie `__pycache__/` und `.venv/` fehlen, die Datei ist die Node-Vorlage. Ausserdem ist `.DS_Store` wieder geändert (siehe Punkt 6).
+
+Erledigt seit der letzten Version: `openCards.append[i]` in `shuffle.py` (siehe 3.21).
+
+Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rules.js`), 20 (Regelprüfung beim Ablegen), 21 (Karte bleibt in `openCards`), 27 (Farbe bei „Room erstellen“), 28 (`sessionStorage` beim Zurückgehen). Früher schon: `login.js` wird nicht mehr doppelt eingebunden.
 
 ---
 
@@ -340,6 +385,11 @@ Erledigt seit der letzten Version: Punkte 14, 22, 23, 24 (Import und Logik in `r
 
 | Datum | Wer | Was |
 |---|---|---|
+| 13.11.2026 | [Arun] | Backend-Ordner `logic/` und `connection/` angelegt, `rules.py` (leer) und `shuffle.py` (Spielerkarten filtern, mischen, auf 10/3/27 verteilen) geschrieben, Fehler `openCards.append[i]` behoben (noch nicht committet) |
+| 13.11.2026 | [KI] | Änderungen von Arun als 3.21 dokumentiert, Projektstruktur ergänzt, Auffälligkeiten 33 bis 37 notiert (am Code nichts geändert) |
+| 13.11.2026 | [KI] | Codex: Auf Wunsch von Arun Kommentare in `backend/logic/shuffle.py` durch kurze Funktions-Docstrings ersetzt; Logik unverändert, als 3.20 dokumentiert. |
+| 13.11.2026 | [KI] | Codex: `backend/logic/shuffle.py` auf Wunsch von Arun knapp kommentiert, ausführbaren Code unverändert gelassen und bestehenden Fehler bei `openCards.append[i]` erklärt; als 3.19 dokumentiert. |
+| 13.11.2026 | [KI] | Codex: Auf Wunsch von Arun alle 160 Karten als kommentierte Python-Liste aus Dictionaries in `backend/cards.py` eingefügt; Eigenschaften und Reihenfolge geprüft; als 3.18 dokumentiert. |
 | 08.11.2026 | [Arun] | `rules.js`: `getNumber`, `getColor`, `isAllowed` neu; `main.js`: Regelprüfung beim Ablegen, `sessionStorage` beim Zurückgehen, Karte bleibt in `openCards`; `move-cards.js`: Parameter `updateStacks`; `login.js`: Farbe auch bei „Room erstellen“ speichern; `AGENTS.md`: Regeln 5 und 6 (noch nicht committet) |
 | 08.11.2026 | [KI] | Änderungen von Arun als 3.17 dokumentiert, erledigte Punkte vermerkt, Auffälligkeiten 30 bis 32 notiert (am Code nichts geändert) |
 | 08.11.2026 | [KI] | Mit Freigabe von Arun: Parameter `updateStacks` und Aufruf mit `false` eingebaut, damit Zehnerstapel-Karten beim Verschieben zu offenen Karten in `openCards` bleiben; als 3.17 dokumentiert. Punkt 21 ist damit behoben. |
