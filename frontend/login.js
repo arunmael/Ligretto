@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    // FIXME: Hier wird keine Farbe gespeichert, auf game.html ist playerColor dann null.
+    // "Erstelle einen neuen Room": Farbe und RoomID für game.html speichern, dann weiterleiten
     createRoomButton.addEventListener("click", () => {
         const color = getSubmitValues().color;
         const roomId = getSubmitValues().roomId;

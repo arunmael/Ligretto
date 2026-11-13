@@ -329,6 +329,27 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Geprüft: Ruft man `getDivideStack(CARDS, "blue")` aus dem Projektordner auf, kommen 10, 3 und 27 Karten zurück, alle mit `owner` `"blue"`. Der direkte Aufruf `python3 backend/logic/shuffle.py` bricht dagegen ab (siehe Punkt 33).
 - **[KI]** Ein venv wird noch nicht gebraucht, weil nur die Standardbibliothek (`random`) verwendet wird. Sobald ein Paket mit `pip` installiert wird (z. B. für `connection/`), sollte eines angelegt und `.venv/` in die `.gitignore` aufgenommen werden.
 
+### 3.22 Kommentare an die Regeln angepasst – [KI], 13.11.2026
+
+- **[Arun]** Hat beauftragt, alle Kommentare im Projekt auf die Regeln in `AGENTS.md` zu prüfen und nicht passende zu ändern.
+- **[KI]** Geändert wurden nur Kommentare, kein Code (per Diff geprüft). Die Zeilenzahl jeder Datei ist gleich geblieben, damit die Zeilenangaben in `Bugs.md` weiterhin stimmen.
+  - `login.js`, Zeile 48: Das veraltete `FIXME` („keine Farbe gespeichert“) stimmte nicht mehr und wurde durch eine Beschreibung des Handlers ersetzt, passend zum „Beitreten“-Handler.
+  - `move-cards.js`: Das erledigte `//todo` (siehe 3.17) entfernt. Im JSDoc von `moveCardsToPlayArea` fehlte der Parameter `updateStacks`, er ist jetzt ergänzt.
+  - `create-stack.js`, JSDoc von `createStartStack`: „4 offene Karten“ und „26 Handkarten“ auf die tatsächlichen 3 und 27 korrigiert.
+  - `create-stack.js`, Zeilen 298 und 299: Hinweis ergänzt, dass die Bilder nur 60 × 90 px gross sind (BUG-008).
+  - `create-stack.js`, Zeile 304: Der Kommentar nannte 2 px Versatz, der Code verwendet 2,5 px.
+  - `create-stack.js`: Den Hinweis „Zahl 4 durch Anzahl Spieler ersetzen“ als `TODO:` markiert und über den JSDoc-Block verschoben. Zwischen JSDoc und Funktion hat er die Zuordnung des JSDoc zur Funktion unterbrochen.
+  - `game.html`, Zeile 6: `rules.js` in der Aufzählung der Imports von `main.js` ergänzt.
+- **[KI]** Geprüft und in Ordnung: `main.js`, `rules.js`, `index.html`, alle CSS-Dateien, `shuffle.py` und `cards.py`. Das `FIXME` in `main.js` (Zeile 93) bleibt, weil der Fehler noch besteht (BUG-005). Die auskommentierten Blöcke in `create-stack.js` (Zeilen 276 bis 294) erfüllen Regel 3 bereits.
+
+### 3.23 Endlosschleife ohne Farbe abgefangen, Import in `shuffle.py` entfernt – [Arun], dokumentiert von [KI], 13.11.2026
+
+- **[Arun]** `main.js`: Die Spielerfarbe wird jetzt ganz am Anfang des `DOMContentLoaded`-Handlers gelesen (Zeilen 11 bis 16). Ist sie keine der vier gültigen Farben, erscheint die Meldung „Etwas ist Schief gelaufen“, der Browser leitet zu `index.html` zurück, und `return` bricht den restlichen Aufbau der Spielseite ab. Die alte Zeile `const owner = …` vor `createStartStack()` ist entfernt.
+- **[KI]** Damit friert `game.html` nicht mehr ein, wenn die Seite ohne Login geöffnet wird. Die Funktion `createStartStack()` selbst hat die Endlosschleife weiterhin; sie ist nur durch die Prüfung in `main.js` geschützt (BUG-003, auf „Klein“ herabgestuft).
+- **[Arun]** `shuffle.py`: Den Import `from .. cards import CARDS` entfernt. `CARDS` kommt ohnehin als Parameter in alle drei Funktionen. Der Aufrufer (später z. B. `backend/server.py`) importiert die Liste und übergibt sie.
+- **[KI]** Geprüft: `python3 backend/logic/shuffle.py` sowie `import logic.shuffle` aus `backend/` laufen jetzt ohne Fehler. BUG-001 ist behoben und aus `Bugs.md` entfernt. Die Startdatei des Servers sollte direkt in `backend/` liegen, damit `from cards import CARDS` und `from logic.shuffle import …` gefunden werden.
+- **[KI]** In `Bugs.md` alle Zeilenangaben für `main.js` und `shuffle.py` nachgeführt, da sich die Zeilen verschoben haben.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -375,7 +396,9 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 36. `shuffle.py`, `getPlayerCards`: Der `counter` ist unnötig. `i` ist bereits die Karte, `i["owner"]` reicht statt `CARDS[counter]["owner"]`. Auch in `getDivideStack` ist `counter >= 10 and` doppelt, weil der erste Zweig das schon ausschliesst. Der Tippfehler `shuffeldCards` ist nur kosmetisch.
 37. `.gitignore`: Python-Einträge wie `__pycache__/` und `.venv/` fehlen, die Datei ist die Node-Vorlage. Ausserdem ist `.DS_Store` wieder geändert (siehe Punkt 6).
 
-Erledigt seit der letzten Version: `openCards.append[i]` in `shuffle.py` (siehe 3.21).
+Erledigt seit der letzten Version: `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
+
+Offene Bugs werden seit dem 13.11.2026 zusätzlich in `Dokumentation/Bugs.md` geführt (Regel 7).
 
 Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rules.js`), 20 (Regelprüfung beim Ablegen), 21 (Karte bleibt in `openCards`), 27 (Farbe bei „Room erstellen“), 28 (`sessionStorage` beim Zurückgehen). Früher schon: `login.js` wird nicht mehr doppelt eingebunden.
 
@@ -385,6 +408,9 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 13.11.2026 | [Arun] | `main.js`: Farbe am Anfang prüfen, sonst Meldung, zurück zu `index.html` und Abbruch; `shuffle.py`: Import `from .. cards import CARDS` entfernt (noch nicht committet) |
+| 13.11.2026 | [KI] | Bug-Check nach Regel 7: BUG-001 als behoben entfernt, BUG-003 auf „Klein“ herabgestuft, Zeilenangaben in `Bugs.md` nachgeführt; Änderungen von Arun als 3.23 dokumentiert |
+| 13.11.2026 | [KI] | Auf Wunsch von Arun alle Kommentare geprüft, veraltete und falsche Kommentare in `login.js`, `move-cards.js`, `create-stack.js` und `game.html` korrigiert (nur Kommentare, Zeilenzahl gleich); als 3.22 dokumentiert |
 | 13.11.2026 | [Arun] | Backend-Ordner `logic/` und `connection/` angelegt, `rules.py` (leer) und `shuffle.py` (Spielerkarten filtern, mischen, auf 10/3/27 verteilen) geschrieben, Fehler `openCards.append[i]` behoben (noch nicht committet) |
 | 13.11.2026 | [KI] | Änderungen von Arun als 3.21 dokumentiert, Projektstruktur ergänzt, Auffälligkeiten 33 bis 37 notiert (am Code nichts geändert) |
 | 13.11.2026 | [KI] | Codex: Auf Wunsch von Arun Kommentare in `backend/logic/shuffle.py` durch kurze Funktions-Docstrings ersetzt; Logik unverändert, als 3.20 dokumentiert. |

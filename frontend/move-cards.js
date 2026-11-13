@@ -6,7 +6,6 @@
 /** Alle Karten, die schon auf dem Spielfeld liegen (auch überdeckte). */
 export let laidCards = [];
 
-//todo wenn die Karte von tenStack nach openCards verschoben wird, darf sie nicht laidCards angefügt werden sondern muss den openCards angefügt werden.
 
 /**
  * Sucht die Karte in openCards, tenStack und handCards, entfernt sie dort
@@ -32,6 +31,7 @@ export function deleteFromStack(card, openCards, tenStack, handCards) {
  * Kommt die Karte vom Zehnerstapel, wird die nächste Karte darunter klickbar gemacht.
  * @param {HTMLImageElement} card         zu verschiebende Karte
  * @param {HTMLElement}      newLocation  Ziel-Element (Spielfeld oder offene Karte)
+ * @param {boolean}          updateStacks false = Arrays nicht anpassen (Aufrufer hat die Karte schon verschoben)
  */
 export function moveCardsToPlayArea (card, newLocation, openCards, tenStack, handCards, updateStacks = true) { // Aktualisiert standardmässig die Arrays; false behält bereits umgeordnete Kartendaten bei.
     const clickedCard = card;

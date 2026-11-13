@@ -1,5 +1,4 @@
 from random import *
-from .. cards import CARDS
 
 def getPlayerCards(CARDS, playerColor):
     """Gibt alle Karten zurück, deren Besitzer der Spielerfarbe entspricht."""

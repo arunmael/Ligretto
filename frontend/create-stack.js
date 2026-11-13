@@ -189,8 +189,8 @@ export function getDeck(owner) {
 
 /**
  * Verteilt das Deck eines Spielers auf die Startstapel:
- * 4 zufällige offene Karten, 10 zufällige Karten im Zehnerstapel,
- * die restlichen 26 gemischt als Handkarten.
+ * 3 zufällige offene Karten, 10 zufällige Karten im Zehnerstapel,
+ * die restlichen 27 gemischt als Handkarten.
  * @param {string} owner  Spielerfarbe
  * @returns {{openCards: object[], tenStack: object[], handCards: object[]}}
  */
@@ -295,13 +295,13 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
     const stackOffset = Math.max(0, tenStack.length - 1) * 2; // Berechnet den Gesamtversatz auch bei weniger als zehn Karten.
     newDiv.style.position = "relative"; // Macht den Container zum Bezugspunkt der absolut positionierten Karten.
-    newDiv.style.width = `${84 + stackOffset}px`; // Reserviert 80 px Bildbreite, 4 px Rahmen und den Gesamtversatz.
-    newDiv.style.height = `${124 + stackOffset}px`; // Reserviert 120 px Bildhöhe, 4 px Rahmen und den Gesamtversatz.
+    newDiv.style.width = `${84 + stackOffset}px`; // Reserviert 80 px Bildbreite, 4 px Rahmen und den Gesamtversatz. Achtung: Bilder sind nur 60 px breit (BUG-008).
+    newDiv.style.height = `${124 + stackOffset}px`; // Reserviert 120 px Bildhöhe, 4 px Rahmen und den Gesamtversatz. Achtung: Bilder sind nur 90 px hoch (BUG-008).
     newDiv.style.isolation = "isolate"; // Beschränkt die Stapelreihenfolge auf diesen Container.
 
     for (let i = 0; i < tenStack.length; i++) { // Erstellt ein eigenes Bild für jede vorhandene Stapelkarte.
         const image = document.createElement("img"); // Ermöglicht eine unabhängige Position und spätere Klickbehandlung pro Karte.
-        const offset = i * 2.5; // Verschiebt jede weitere Karte um 2 px nach rechts und unten.
+        const offset = i * 2.5; // Verschiebt jede weitere Karte um 2,5 px nach rechts und unten.
         image.id = `image${tenStack[i].id}`; // Ordnet das Bild eindeutig der jeweiligen Karte zu.
         image.classList.add("tenStackImage"); // Behält die bestehende Klasse für Stapelkarten bei.
         image.src = tenStack[i].src; // Zeigt die Vorderseite der jeweiligen Karte wie vorgeschlagen.
@@ -360,11 +360,11 @@ export function createDOMStack (openCards, tenStack, handCards) {
 
 
 
+// TODO: überall die Zahl 4 durch eine Anzahl Spieler Variable ersetzen
 /**
  * Erzeugt im Spielfeld (#playArea) ein 4 × 4-Raster aus 16 leeren Ablagefeldern
  * mit der Klasse "playAreaField" (daran erkennt main.js ein gültiges Ziel).
  */
-// überall die Zahl 4 durch eine Anzahl Spieler Variable ersetzen
 export function createPlayArea() {
     const playArea = document.querySelector("#playArea");
     playArea.style.display = "grid";

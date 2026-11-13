@@ -8,6 +8,12 @@ import * as moveCards from "./move-cards.js";
 import * as rules from "./rules.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const owner = sessionStorage.getItem("playerColor");
+    if (!["blue", "green", "pink", "yellow"].includes(owner)) {
+        alert("Etwas ist Schief gelaufen")
+        window.location.href = "index.html";
+        return
+    };
     const openCardsBottom = document.querySelector("#openCardsBottom");
     const tenStackBottom = document.querySelector("#tenStackBottom");
     const handCardsBottomClosed = document.querySelector("#handCardsBottomClosed")
@@ -24,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Spielstart: Karten verteilen und anzeigen
-    const owner = sessionStorage.getItem("playerColor");
     const playerStartStacks = createStack.createStartStack(owner);
 
     createStack.createPlayArea();
