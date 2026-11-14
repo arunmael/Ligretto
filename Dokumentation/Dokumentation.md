@@ -398,6 +398,28 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
   - `move-cards.js`: Kommentar zu `getOldLocation()` ergänzt; JSDoc und Zeilenkommentare von `deleteFromStack()` beschreiben jetzt die Unterscheidung `openCards`/`laidCards` statt „immer nach `laidCards`“; Kommentar beim Aufruf in `moveCardsToPlayArea()` angepasst.
   - `main.js`: JSDoc des Klickhandlers der offenen Karten (nur leere Plätze), Kommentar zur Leer-Prüfung in Zeile 53 ergänzt, Kommentar in Zeile 60 weist jetzt darauf hin, dass die Zeile wirkungslos ist.
 
+### 3.31 Quellcode formatiert – [KI], 14.11.2026
+
+- **[Arun]** Hat einheitliche Einrückungen und übersichtliche Leerzeilen in allen Quelldateien gewünscht, ausdrücklich ohne Änderungen am Codeverhalten.
+- **[KI]** JavaScript, HTML, CSS und Python geprüft; Einrückungen, Abstände, Leerzeilen und Zeilenumbrüche dort vereinheitlicht, wo nötig. Bereits passend formatierte und leere Dateien bleiben unverändert. Anweisungen, Werte und Kommentare wurden inhaltlich nicht verändert; insbesondere bleibt Aruns noch leerer `if`-Block in `main.js` unverändert leer.
+- **[KI]** Gegen den Arbeitsstand unmittelbar vor der Formatierung geprüft: JavaScript- und Python-Syntaxbäume unverändert, HTML-Struktur und Textinhalte unverändert, in allen Quelldateien ausschliesslich Whitespace-Änderungen. Vorhandene Änderungen von Arun wurden erhalten. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.32 Offene Karte trotz Zehnerstapel-Auswahl wählbar, Farbprüfung in `getDeck()` und `shuffle.py` – [Arun], 14.11.2026
+
+- **[Arun]** `main.js`, Klickhandler der offenen Karten (Zeilen 53 bis 60): Ist eine Zehnerstapel-Karte ausgewählt und wird eine **belegte** offene Karte angeklickt, wird jetzt diese offene Karte ausgewählt (grüner Rahmen, alter Rahmen über `clickCardStyle()` zurückgesetzt). Bisher passierte nichts (BUG-011 behoben).
+- **[Arun]** `create-stack.js`: `getDeck()` prüft die Spielerfarbe. Bei einer ungültigen Farbe erscheint eine Meldung, die Seite wechselt zu `index.html` und die Funktion gibt `false` zurück. `createStartStack()` bricht dann mit `false` ab, statt in eine Endlosschleife zu laufen (BUG-003 behoben).
+- **[Arun]** `backend/logic/shuffle.py`: Erster Versuch, eine unbekannte Spielerfarbe abzufangen. `getPlayerCards()` soll bei leerer Kartenliste `False` liefern, `shuffleDeck()` reicht `False` weiter, `getDivideStack()` gibt dann `"Player color unknown"` zurück.
+- **[KI]** Bug-Check nach Regel 7: Die Prüfung in `getPlayerCards()` (Zeile 6) greift auf `playerCards` zu, bevor die Variable existiert, und die Klammer von `len()` sitzt falsch. Dadurch stürzt die Funktion bei **jeder** Farbe ab (neu als BUG-012, Kritisch, in Python bestätigt). BUG-002 bleibt offen und wurde ergänzt (`[] == False` greift nicht, Text statt drei Listen als Rückgabe). BUG-003 und BUG-011 aus `Bugs.md` entfernt, Zeilenangaben von BUG-005 bis BUG-008 nachgeführt.
+- **[KI]** Hinweise: Der Kommentar „Nachfüllen nur auf leere Plätze …“ steht in `main.js` jetzt hinter dem `if`-Block in Zeile 60 statt bei der Prüfung. `main.js` prüft den Rückgabewert `false` von `createStartStack()` nicht. Das ist zurzeit egal, weil `main.js` die Farbe schon vorher prüft, die Prüfung ist dadurch aber doppelt (`main.js` Zeilen 11 bis 16 und `getDeck()`).
+- **[KI]** Die Formatierung aus 3.31 enthält nur Leerzeichen- und Leerzeilen-Änderungen. Das wurde mit `git diff -w` geprüft.
+
+### 3.33 `shuffle.py` korrigiert, `Bugs.md` nach Dringlichkeit sortiert – [Arun]/[KI], 14.11.2026
+
+- **[Arun]** `backend/logic/shuffle.py`: Die Prüfung in `getPlayerCards()` steht jetzt nach der Schleife (`len(playerCards) == 0`), `getDivideStack()` löst bei unbekannter Farbe `ValueError("Player color unknown")` aus statt einen Text zurückzugeben, Import auf `from random import shuffle` reduziert, Tippfehler `shuffledCards` korrigiert. Bewusst beibehalten: `counter`-Variablen, ausführliche `elif`-Bedingungen, `return` nach `raise` (Zeile 40).
+- **[KI]** Geprüft: `"blue"` ergibt 10/3/27 Karten, `"red"` und `None` lösen `ValueError` aus. BUG-012 und BUG-002 aus `Bugs.md` entfernt.
+- **[Arun]** Hat gewünscht, dass `Bugs.md` immer nach Dringlichkeit sortiert ist. **[KI]** Regel in `AGENTS.md` (Abschnitt „Format von `Bugs.md`“) ergänzt und die offenen Bugs neu sortiert: BUG-006 (Fehlverhalten im Spiel), BUG-005 (Konsolenfehler), BUG-009 (Bedienbarkeit Startseite), BUG-008 (Layout), BUG-007 (zurzeit nicht auslösbar).
+- **[KI]** Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs. `getDivideStack()` mit allen vier Spielerfarben (je 10/3/27 Karten) sowie mit `"red"`, `None` und `""` (`ValueError`) geprüft. Die offenen Einträge BUG-005 bis BUG-009 bestehen unverändert an denselben Zeilen, die Sortierung nach Dringlichkeit bleibt gültig.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -456,6 +478,11 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 14.11.2026 | [Arun] | `shuffle.py`: Farbprüfung nach der Schleife, `ValueError` statt Text, Import und Tippfehler korrigiert (BUG-012, BUG-002 behoben; siehe 3.33). |
+| 14.11.2026 | [KI] | `Bugs.md` bereinigt und nach Dringlichkeit sortiert; Sortierregel in `AGENTS.md` ergänzt (siehe 3.33). |
+| 14.11.2026 | [Arun] | `main.js`: belegte offene Karte trotz Zehnerstapel-Auswahl wählbar (BUG-011 behoben); `create-stack.js`: Farbprüfung in `getDeck()` (BUG-003 behoben); `shuffle.py`: Prüfung auf unbekannte Farbe begonnen (siehe 3.32). |
+| 14.11.2026 | [KI] | Bug-Check nach Regel 7: BUG-003 und BUG-011 entfernt, BUG-012 (Kritisch) neu, BUG-002 ergänzt, Zeilenangaben nachgeführt (siehe 3.32). |
+| 14.11.2026 | [KI] | Quellcode ausschliesslich formatiert: Einrückungen, Leerzeichen und Zeilenumbrüche vereinheitlicht; Syntax- und Inhaltsvergleiche gegen den vorherigen Arbeitsstand bestanden (siehe 3.31). |
 | 14.11.2026 | [Arun] | `move-cards.js`: Argumentreihenfolge beim Aufruf von `getOldLocation()` korrigiert, BUG-010 behoben (siehe 3.30). |
 | 14.11.2026 | [KI] | Veraltete Kommentare in `main.js` und `move-cards.js` korrigiert; Bug-Check: BUG-010 aus `Bugs.md` entfernt (siehe 3.30). |
 | 14.11.2026 | [Arun] | `main.js`: Zehnerstapel-Karte nur noch auf leere offene Plätze legen; `move-cards.js`: `getOldLocation()` und Zielprüfung in `deleteFromStack()` ergänzt (siehe 3.29). |

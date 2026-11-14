@@ -9,7 +9,7 @@ import { CARDS } from "./create-stack.js";
  * @param {HTMLImageElement} card  Kartenbild mit ID "image<kartenId>"
  * @returns {number|undefined}     undefined, falls die Karte nicht in CARDS steht
  */
-export function getNumber(card){
+export function getNumber(card) {
     const cardId = card.id.slice(5); // Präfix "image" (5 Zeichen) entfernen
     let number;
     CARDS.forEach((current) => {
@@ -25,7 +25,7 @@ export function getNumber(card){
  * @param {HTMLImageElement} card  Kartenbild mit ID "image<kartenId>"
  * @returns {string|undefined}
  */
-export function getColor(card){
+export function getColor(card) {
     const cardId = card.id.slice(5); // Präfix "image" entfernen
     let color;
     CARDS.forEach((current) => {
@@ -35,7 +35,6 @@ export function getColor(card){
     })
     return color
 };
-
 
 /**
  * Prüft, ob currentCard auf targetCard gelegt werden darf.

@@ -6,7 +6,7 @@
 /** Alle Karten, die schon auf dem Spielfeld liegen (auch überdeckte). */
 export let laidCards = [];
 
-function getOldLocation (card, tenStack, openCards, handCards) { // Bestimmt den Herkunftsstapel; nur "tenStack" ist ein String, sonst wird das Array zurückgegeben.
+function getOldLocation(card, tenStack, openCards, handCards) { // Bestimmt den Herkunftsstapel; nur "tenStack" ist ein String, sonst wird das Array zurückgegeben.
     if (tenStack.some(entry => `image${entry.id}` === card.id)) {
         return "tenStack"
     } else if (openCards.some(entry => `image${entry.id}` === card.id)) {
@@ -15,7 +15,6 @@ function getOldLocation (card, tenStack, openCards, handCards) { // Bestimmt den
         return handCards
     }
 }
-
 
 /**
  * Sucht die Karte in openCards, tenStack und handCards und entfernt sie dort.
@@ -28,20 +27,19 @@ export function deleteFromStack(card, openCards, tenStack, handCards, newLocatio
 
         if (index !== -1) {
             if (getOldLocation(card, tenStack, openCards, handCards) === "tenStack"
-            && newLocation.classList.contains("openCardsElement")) {
+                && newLocation.classList.contains("openCardsElement")) {
                 const [removedCard] = stack.splice(index, 1);
                 openCards.push(removedCard); // Nachgefüllte Karte gehört jetzt zu den offenen Karten, nicht aufs Spielfeld.
                 return;
             } else {
                 const [removedCard] = stack.splice(index, 1);
                 laidCards.push(removedCard); // Alle anderen Züge landen auf dem Spielfeld und damit in laidCards.
-            return;
-        }
-             // Beendet die Suche, sobald die Karte aus ihrem bisherigen Stapel entfernt wurde.
+                return;
+            }
+            // Beendet die Suche, sobald die Karte aus ihrem bisherigen Stapel entfernt wurde.
         }
     }
 }
-
 
 /**
  * Verschiebt ein Kartenbild in newLocation und aktualisiert die Daten-Arrays.
@@ -49,7 +47,7 @@ export function deleteFromStack(card, openCards, tenStack, handCards, newLocatio
  * @param {HTMLImageElement} card         zu verschiebende Karte
  * @param {HTMLElement}      newLocation  Ziel-Element (Spielfeld oder offene Karte)
  */
-export function moveCardsToPlayArea (card, newLocation, openCards, tenStack, handCards) { // Stellt auf Aruns Wunsch die ursprüngliche Funktion ohne updateStacks wieder her.
+export function moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards) { // Stellt auf Aruns Wunsch die ursprüngliche Funktion ohne updateStacks wieder her.
     const clickedCard = card;
     if (!clickedCard || !newLocation) return;
     const previousStack = clickedCard.parentElement;
@@ -63,18 +61,16 @@ export function moveCardsToPlayArea (card, newLocation, openCards, tenStack, han
         }
     }
     console.log(laidCards)
-
 }
 
 /**
  * Setzt den Rahmen der zuvor ausgewählten Karte auf schwarz zurück.
  * @param {HTMLImageElement|null} lastCard  null, wenn noch keine Karte ausgewählt war
  */
-export function clickCardStyle (lastCard) {
+export function clickCardStyle(lastCard) {
     if (lastCard === null) {
         return
-    } else {lastCard.style.border = "2px solid black";};
+    } else {
+        lastCard.style.border = "2px solid black";
+    };
 }
-
-
-

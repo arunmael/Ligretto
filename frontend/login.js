@@ -8,31 +8,27 @@
  * Liest die aktuellen Formularwerte aus.
  * @returns {{color: string, roomId: string}}
  */
- export function getSubmitValues () {
-        const roomIdInputField = document.querySelector("#roomIdInput");
-        const chosenColor = document.querySelector("#chosenColor");
-        const roomId = roomIdInputField.value;
-        const color = chosenColor.value;
-        return { color, roomId }
-    }
-
+export function getSubmitValues() {
+    const roomIdInputField = document.querySelector("#roomIdInput");
+    const chosenColor = document.querySelector("#chosenColor");
+    const roomId = roomIdInputField.value;
+    const color = chosenColor.value;
+    return { color, roomId }
+}
 
 /** Erstellt einen neuen Raum. Bisher nur Weiterleitung zur Spielseite. */
-export function createRoom () {
-        window.location.href = "game.html";
-    };
+export function createRoom() {
+    window.location.href = "game.html";
+};
 
 /** Tritt einem bestehenden Raum bei. Bisher nur Weiterleitung zur Spielseite. */
-export function joinRoom () {
-        window.location.href = "game.html";
-    };
-
+export function joinRoom() {
+    window.location.href = "game.html";
+};
 
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.querySelector("#loginForm");
     const createRoomButton = document.querySelector("#createRoomButton");
-
-
 
     // "Beitreten": Farbe und RoomID für game.html speichern, dann weiterleiten
     loginForm.addEventListener("submit", (event) => {
@@ -43,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("roomId", roomId);
         joinRoom();
     });
-
 
     // "Erstelle einen neuen Room": Farbe und RoomID für game.html speichern, dann weiterleiten
     createRoomButton.addEventListener("click", () => {

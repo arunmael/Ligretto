@@ -35,9 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
     createStack.createPlayArea();
 
     createStack.createDOMStack(playerStartStacks.openCards,
-    playerStartStacks.tenStack,
-    playerStartStacks.handCards);
-
+        playerStartStacks.tenStack,
+        playerStartStacks.handCards);
 
     /**
      * Klick auf die offenen Karten.
@@ -48,27 +47,39 @@ document.addEventListener("DOMContentLoaded", () => {
     openCardsBottom.addEventListener("click", (event) => {
         const clickedCard = event.target;
         const isTenStackCard = activeField?.classList.contains("tenStackImage")
+
         if (isTenStackCard === true && !(clickedCard.className === openCardsBottom.className)) {
             const targetSlot = clickedCard.closest(".openCardsElement"); // Findet bei Klick auf Bild oder Rand denselben offenen Kartenplatz.
-            if (targetSlot?.querySelector("img")) return; // Nachfüllen nur auf leere Plätze, damit keine offene Karte überdeckt wird.
+            const targetImage = targetSlot?.querySelector("img");
+            if (targetImage) {
+                moveCards.clickCardStyle(lastCard);
+                activeField = targetImage;
+                activeField.style.border = "5px solid green";
+                lastCard = activeField;
+                return;
+            }; // Nachfüllen nur auf leere Plätze, damit keine offene Karte überdeckt wird.
             if (!targetSlot || targetSlot.contains(activeField)) return; // Verhindert ungültige Ziele und das Ablegen einer Karte auf sich selbst.
+
             activeField.style.border = "2px solid black";
             const card = activeField;
             const openCards = playerStartStacks.openCards;
             const tenStack = playerStartStacks.tenStack;
             const handCards = playerStartStacks.handCards;
+
             targetSlot.querySelector("img")?.remove(); // Hat seit der Prüfung oben keine Wirkung mehr, da der Platz hier immer leer ist.
             moveCards.moveCardsToPlayArea(card, targetSlot, openCards, tenStack, handCards); // Verschiebt das Bild ins Ziel-div und überlässt die Listenänderung deleteFromStack().
+
             activeField = null;
             console.log(openCards)
             console.log(moveCards.laidCards)
         } else if (!(clickedCard instanceof HTMLImageElement)) {
             return
         } else {
-        moveCards.clickCardStyle(lastCard);
-        clickedCard.style.border = "5px solid green";
-        activeField = clickedCard;
-        lastCard = clickedCard;};
+            moveCards.clickCardStyle(lastCard);
+            clickedCard.style.border = "5px solid green";
+            activeField = clickedCard;
+            lastCard = clickedCard;
+        };
     });
 
     /**
@@ -114,8 +125,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
         activeField = null;
     });
-
-
-
-
 });

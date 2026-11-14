@@ -7,7 +7,6 @@ header, footer {
     padding-left: 60px;
 }
 
-
 /* 3×3-Raster: schmale Ränder für die Spieler, breite Mitte für das Spielfeld */
 main {
     display: grid;

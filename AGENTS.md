@@ -106,7 +106,7 @@ Wenn es keine offenen Bugs gibt, entfällt der Hinweis.
 Security Lücken sind mindestens **Mittel**, im Zweifel **Kritisch**.
 
 ### Format von `Bugs.md`
-IDs fortlaufend vergeben (`BUG-001`, `BUG-002`, ...). Eine ID wird nie wiederverwendet, auch wenn der Bug gelöscht wurde. Damit du die nächste freie ID kennst, steht oben im File ein Zähler. Einträge nach Schweregrad sortieren, Kritisch zuoberst.
+IDs fortlaufend vergeben (`BUG-001`, `BUG-002`, ...). Eine ID wird nie wiederverwendet, auch wenn der Bug gelöscht wurde. Damit du die nächste freie ID kennst, steht oben im File ein Zähler. Einträge nach Dringlichkeit sortieren: Der Bug, der zuerst gefixt werden sollte, steht zuoberst. Zuerst nach Schweregrad (Kritisch vor Mittel vor Klein), innerhalb desselben Schweregrads nach Auswirkung (sichtbares Fehlverhalten im Spiel vor Fehlern ohne sichtbare Folgen, aktuell auslösbare Bugs vor solchen, die zurzeit nicht erreichbar sind). Diese Sortierung wird **jedes Mal automatisch** neu geprüft und angepasst, wenn `Bugs.md` verändert wird, auch ausserhalb des Bug-Check-Ablaufs.
 
 ```markdown
 # Bugs

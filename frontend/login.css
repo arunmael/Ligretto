@@ -31,14 +31,12 @@ form {
     justify-items: stretch;
 }
 
-
 /* runde Buttons ohne Rahmen */
 button {
     padding: 5px;
     border-radius: 50px;
     border: none;
 }
-
 
 /* Hauptbutton "Beitreten" hervorheben */
 #submitRoomId {
