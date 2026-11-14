@@ -5,7 +5,7 @@
  */
 import * as createStack from "./create-stack.js";
 import * as moveCards from "./move-cards.js";
-import * as rules from "./rules.js";
+import * as rules from "./rules.js"; // Stellt die vorhandenen Prüfungen für Farbe und Kartenwert wieder bereit.
 
 document.addEventListener("DOMContentLoaded", () => {
     const owner = sessionStorage.getItem("playerColor");
@@ -41,30 +41,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /**
      * Klick auf die offenen Karten.
-     * - Ist eine Zehnerstapel-Karte ausgewählt, wird sie auf die angeklickte offene Karte gelegt
-     *   und im Daten-Array vom Zehnerstapel zu openCards verschoben.
+     * - Ist eine Zehnerstapel-Karte ausgewählt, wird sie auf einen leeren offenen Platz gelegt
+     *   und im Daten-Array vom Zehnerstapel zu openCards verschoben; belegte Plätze werden ignoriert.
      * - Sonst wird die angeklickte offene Karte ausgewählt (grüner Rahmen).
      */
     openCardsBottom.addEventListener("click", (event) => {
         const clickedCard = event.target;
         const isTenStackCard = activeField?.classList.contains("tenStackImage")
         if (isTenStackCard === true && !(clickedCard.className === openCardsBottom.className)) {
+            const targetSlot = clickedCard.closest(".openCardsElement"); // Findet bei Klick auf Bild oder Rand denselben offenen Kartenplatz.
+            if (targetSlot?.querySelector("img")) return; // Nachfüllen nur auf leere Plätze, damit keine offene Karte überdeckt wird.
+            if (!targetSlot || targetSlot.contains(activeField)) return; // Verhindert ungültige Ziele und das Ablegen einer Karte auf sich selbst.
             activeField.style.border = "2px solid black";
             const card = activeField;
             const openCards = playerStartStacks.openCards;
             const tenStack = playerStartStacks.tenStack;
             const handCards = playerStartStacks.handCards;
-           for (const stack of [openCards, tenStack, handCards]) {
-                const index = stack.findIndex(entry => `image${entry.id}` === card.id); // img-IDs = "image" + Karten-ID
-
-                if (index !== -1) {
-                    const [removedCard] = stack.splice(index, 1);
-                    openCards.push(removedCard);
-                    moveCards.moveCardsToPlayArea(card, clickedCard, openCards, tenStack, handCards, false); // Verschiebt das Kartenbild und behält die Karte in openCards.
-                    break;
-
-                }
-            }
+            targetSlot.querySelector("img")?.remove(); // Hat seit der Prüfung oben keine Wirkung mehr, da der Platz hier immer leer ist.
+            moveCards.moveCardsToPlayArea(card, targetSlot, openCards, tenStack, handCards); // Verschiebt das Bild ins Ziel-div und überlässt die Listenänderung deleteFromStack().
             activeField = null;
             console.log(openCards)
             console.log(moveCards.laidCards)
@@ -92,9 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /**
      * Klick auf das Spielfeld: legt die ausgewählte Karte ab.
-     * - Ziel ist eine liegende Karte: nur erlaubt, wenn rules.isAllowed() zustimmt
-     *   (gleiche Farbe, Wert +1). Die alte Karte wird aus dem DOM entfernt, bleibt aber in laidCards.
-     * - Ziel ist ein leeres Feld: nur eine 1 darf einen neuen Stapel beginnen.
+     * - Auf Karten nur gleiche Farbe und Wert +1; auf leere Felder nur eine 1.
+     * - Eine liegende Zielkarte wird aus dem DOM entfernt, bleibt aber in laidCards.
      * FIXME: Ist keine Karte ausgewählt (activeField === null), wirft activeField.style einen Fehler.
      */
     playArea.addEventListener("click", (event) => {
@@ -107,16 +100,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const handCards = playerStartStacks.handCards;
         if (newLocation instanceof HTMLImageElement) {
             const parent = newLocation.parentElement;
-            if (rules.isAllowed(newLocation, card) === true) {
-                newLocation.remove();
-                console.log("removed");
-                moveCards.moveCardsToPlayArea(card, parent, openCards, tenStack, handCards);
-            } else {
-                console.log("not Allowed")
-            }
-
+            if (rules.isAllowed(newLocation, card) === true) { // Stellt die Prüfung von Farbe und aufsteigendem Wert vor dem Verschieben wieder her.
+                newLocation.remove(); // Entfernt die Zielkarte erst, nachdem der Zug erlaubt wurde.
+                console.log("removed"); // Behält die bestehende Ausgabe bei einem erlaubten Zug bei.
+                moveCards.moveCardsToPlayArea(card, parent, openCards, tenStack, handCards); // Legt die erlaubte Karte in den gemeinsamen Spielfeld-Container.
+            } else { // Lässt bei einem verbotenen Zug beide Karten an ihrem bisherigen Platz.
+                console.log("not Allowed"); // Meldet wie zuvor, dass rules.js den Zug ablehnt.
+            } // Beendet die wiederhergestellte Regelprüfung.
         } else {
-            if (rules.getNumber(card) !== 1) return;
+            if (rules.getNumber(card) !== 1) return; // Stellt die bestehende Regel wieder her: Ein leerer Stapel beginnt mit einer 1.
             moveCards.moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards);
         }
 

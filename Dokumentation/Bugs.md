@@ -1,30 +1,25 @@
 # Bugs
 
-Nächste freie ID: BUG-010
+Nächste freie ID: BUG-012
 
-## BUG-004: Zehnerstapel-Karte verschwindet, wenn sie auf eine offene Karte gelegt wird
-* **Schweregrad:** Mittel
+## BUG-011: Mit ausgewählter Zehnerstapel-Karte lässt sich keine offene Karte mehr auswählen
+* **Schweregrad:** Klein
 * **Typ:** Bug
 * **Status:** Bestätigt
-* **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Gefunden am:** 2026-11-14
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
-  * `frontend/main.js`, Zeilen 48 bis 70, Klick-Handler von `openCardsBottom`
-  * `frontend/move-cards.js`, Zeile 41, `newLocation.appendChild(clickedCard)` in `moveCardsToPlayArea()`
-* **Was ist das Problem:** Wählt man die oberste Zehnerstapel-Karte und klickt dann mitten auf eine offene Karte, verschwindet die Zehnerstapel-Karte vom Bildschirm. In den Daten steht sie aber in `openCards`. Die alte offene Karte bleibt ebenfalls in `openCards`, das Array wird also mit jedem Zug grösser.
-* **Wieso tritt es auf:**
-  1. Ein Klick auf die Kartenmitte trifft das `img` der offenen Karte, nicht das umgebende `div`. Also ist `clickedCard` das `img`.
-  2. Die Prüfung in Zeile 51 schliesst nur den Container `#openCardsBottom` aus, nicht das `img`.
-  3. `moveCardsToPlayArea()` hängt die Karte mit `appendChild` in dieses `img`. Ein `img` zeigt keine Kind-Elemente an, die Karte ist zwar im DOM, aber unsichtbar.
-  4. In Zeile 62 wird die Karte in `openCards` gepusht, die überdeckte offene Karte wird aber nicht entfernt.
-* **Wann tritt es auf:** Zehnerstapel-Karte anklicken (grüner Rahmen), dann auf das Bild einer offenen Karte klicken. Trifft man nur den Rand des `div`, wird die Karte daneben angezeigt statt darüber, und `openCards` wächst trotzdem.
+  * `frontend/main.js`, Zeilen 51 bis 53, Klick-Handler von `openCardsBottom`
+* **Was ist das Problem:** Ist die oberste Zehnerstapel-Karte ausgewählt (grüner Rahmen) und klickt man auf eine belegte offene Karte, passiert nichts: Die offene Karte wird nicht ausgewählt, die Zehnerstapel-Karte bleibt grün. Der Spieler bekommt keine Rückmeldung.
+* **Wieso tritt es auf:** Sobald `isTenStackCard` `true` ist, läuft der Klick immer in den ersten Zweig (Zeile 51). Dort beendet Zeile 53 die Funktion mit `return`, wenn der Platz schon ein `img` enthält. Der `else`-Zweig mit der Auswahl (Zeilen 67 bis 71) wird dadurch nie erreicht.
+* **Wann tritt es auf:** Zehnerstapel-Karte anklicken, danach auf eine offene Karte klicken. Umgehen lässt es sich nur, indem man die Zehnerstapel-Karte zuerst ins Spielfeld klickt.
 
 ## BUG-002: Unbekannte Spielerfarbe ergibt stillschweigend leere Stapel
 * **Schweregrad:** Klein
 * **Typ:** Edge Case
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
   * `backend/logic/shuffle.py`, Zeilen 3 bis 11, Funktion `getPlayerCards()`
   * `backend/logic/shuffle.py`, Zeilen 22 bis 44, Funktion `getDivideStack()`
@@ -37,7 +32,7 @@ Nächste freie ID: BUG-010
 * **Typ:** Edge Case
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
   * `frontend/create-stack.js`, Zeilen 197 bis 217, Funktion `createStartStack()`
 * **Was ist das Problem:** Die Funktion selbst kehrt bei einer Farbe ohne Karten (`null`, `"red"`, `""`) nie zurück und friert den Tab ein. Im Spiel passiert das nicht mehr, weil `main.js` (Zeilen 11 bis 16) die Farbe vor dem Aufruf prüft und sonst zur Startseite zurückleitet. Ruft später eine andere Stelle die Funktion ohne diese Prüfung auf, tritt der Fehler wieder auf.
@@ -53,11 +48,11 @@ Nächste freie ID: BUG-010
 * **Typ:** Edge Case
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
-  * `frontend/main.js`, Zeile 103, `activeField.style.border = "2px solid black";` im Klick-Handler von `playArea`
+  * `frontend/main.js`, Zeile 96, `activeField.style.border = "2px solid black";` im Klick-Handler von `playArea`
 * **Was ist das Problem:** Klickt man auf ein Spielfeld-Feld oder eine liegende Karte, ohne vorher eine Karte ausgewählt zu haben, erscheint in der Konsole `TypeError: Cannot read properties of null (reading 'style')`. Sichtbar passiert nichts, das Spiel läuft danach weiter.
-* **Wieso tritt es auf:** `activeField` ist `null`, solange keine Karte ausgewählt ist, und wird nach jedem Zug wieder auf `null` gesetzt (Zeile 123). Zeile 103 greift trotzdem auf `activeField.style` zu. Es fehlt eine Prüfung wie bei `openCardsBottom` (`activeField?.`). Im Code steht dazu bereits ein `FIXME` (Zeile 98).
+* **Wieso tritt es auf:** `activeField` ist `null`, solange keine Karte ausgewählt ist, und wird nach jedem Zug wieder auf `null` gesetzt (Zeile 115). Zeile 96 greift trotzdem auf `activeField.style` zu. Es fehlt eine Prüfung wie bei `openCardsBottom` (`activeField?.`). Im Code steht dazu bereits ein `FIXME` (Zeile 91).
 * **Wann tritt es auf:** Seite laden und direkt auf ein leeres Feld im Spielfeld klicken, oder nach einem gelegten Zug ein zweites Mal ins Spielfeld klicken.
 
 ## BUG-006: Karte bleibt ausgewählt, obwohl der Rahmen nicht mehr grün ist
@@ -65,11 +60,11 @@ Nächste freie ID: BUG-010
 * **Typ:** Bug
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
-  * `frontend/main.js`, Zeilen 103 und 119, Klick-Handler von `playArea`
+  * `frontend/main.js`, Zeilen 96 und 111, Klick-Handler von `playArea`
 * **Was ist das Problem:** Legt man eine Karte, die keine 1 ist, auf ein leeres Feld, wird ihr Rahmen schwarz, als wäre die Auswahl aufgehoben. Sie ist aber weiterhin ausgewählt. Ein späterer Klick auf eine passende Karte im Spielfeld legt sie ab, obwohl der Spieler glaubt, nichts ausgewählt zu haben.
-* **Wieso tritt es auf:** Zeile 103 setzt den Rahmen schwarz, bevor geprüft wird, ob der Zug erlaubt ist. Zeile 119 beendet die Funktion dann mit `return`, und `activeField = null` in Zeile 123 wird nie erreicht. Beim nicht erlaubten Zug auf eine Karte (Zeile 115) wird `activeField` dagegen zurückgesetzt, die beiden Fälle verhalten sich also unterschiedlich.
+* **Wieso tritt es auf:** Zeile 96 setzt den Rahmen schwarz, bevor geprüft wird, ob der Zug erlaubt ist. Zeile 111 beendet die Funktion dann mit `return`, und `activeField = null` in Zeile 115 wird nie erreicht. Beim nicht erlaubten Zug auf eine Karte (Zeilen 107 und 108) wird `activeField` dagegen zurückgesetzt, die beiden Fälle verhalten sich also unterschiedlich.
 * **Wann tritt es auf:** Eine offene Karte mit Wert 5 auswählen, auf ein leeres Spielfeld-Feld klicken (Rahmen wird schwarz), dann auf eine liegende 4 derselben Farbe klicken: Die 5 wird gelegt.
 
 ## BUG-007: `isAllowed()` stürzt ab, wenn keine Zielkarte übergeben wird und die Karte keine 1 ist
@@ -77,20 +72,20 @@ Nächste freie ID: BUG-010
 * **Typ:** Edge Case
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
   * `frontend/rules.js`, Zeilen 47 bis 55, Funktion `isAllowed()`
   * `frontend/rules.js`, Zeile 29, `card.id.slice(5)` in `getColor()`
 * **Was ist das Problem:** Laut JSDoc darf `targetCard` `null` sein. Mit `null` und einer Karte, die keine 1 ist, wirft die Funktion aber `TypeError: Cannot read properties of null (reading 'id')`, statt `false` zurückzugeben.
 * **Wieso tritt es auf:** Die erste Bedingung (Zeile 48) ist bei einer Nicht-1 `false`. Danach ruft Zeile 50 `getColor(targetCard)` mit `null` auf, und `getColor()` greift auf `null.id` zu.
-* **Wann tritt es auf:** `isAllowed(null, karteMitWert5)`. Aktuell ruft `main.js` die Funktion nie mit `null` auf (leere Felder werden in Zeile 119 separat geprüft), deshalb fällt der Fehler im Spiel noch nicht auf.
+* **Wann tritt es auf:** `isAllowed(null, karteMitWert5)`. Aktuell ruft `main.js` die Funktion nie mit `null` auf (leere Felder werden in Zeile 111 separat geprüft), deshalb fällt der Fehler im Spiel noch nicht auf.
 
 ## BUG-008: Grösse des Zehnerstapel-Containers passt nicht zu den Karten
 * **Schweregrad:** Klein
 * **Typ:** Bug
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
   * `frontend/create-stack.js`, Zeilen 296 bis 299 (Containergrösse) und Zeilen 304, 309 und 310 (Versatz und Bildgrösse) in `createDOMStack()`
 * **Was ist das Problem:** Der Container des Zehnerstapels ist breiter und höher als der Stapel selbst. Das schafft unnötigen Leerraum im Spielerbereich.
@@ -102,7 +97,7 @@ Nächste freie ID: BUG-010
 * **Typ:** Bug
 * **Status:** Bestätigt
 * **Gefunden am:** 2026-11-13
-* **Zuletzt geprüft:** 2026-11-13
+* **Zuletzt geprüft:** 2026-11-14
 * **Betroffen:**
   * `frontend/index.html`, Zeilen 20 und 21
 * **Was ist das Problem:** Ein Klick auf den Text „Gib die RoomID ein“ setzt den Cursor nicht ins Eingabefeld, und Screenreader lesen das Feld ohne Beschriftung vor.

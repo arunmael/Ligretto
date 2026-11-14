@@ -350,6 +350,54 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Geprüft: `python3 backend/logic/shuffle.py` sowie `import logic.shuffle` aus `backend/` laufen jetzt ohne Fehler. BUG-001 ist behoben und aus `Bugs.md` entfernt. Die Startdatei des Servers sollte direkt in `backend/` liegen, damit `from cards import CARDS` und `from logic.shuffle import …` gefunden werden.
 - **[KI]** In `Bugs.md` alle Zeilenangaben für `main.js` und `shuffle.py` nachgeführt, da sich die Zeilen verschoben haben.
 
+### 3.24 Ergänzung `updateStacks` gezielt zurückgenommen – [KI], 14.11.2026
+
+- **[Arun]** Hat die gezielte Rücknahme der Ergänzung gewünscht, ohne die gesamte Datei auf einen älteren Stand zurückzusetzen.
+- **[KI]** In `move-cards.js` den Parameter `updateStacks`, seinen JSDoc-Eintrag und die zugehörige Bedingung entfernt. `deleteFromStack()` wird wieder unbedingt aufgerufen. In `main.js` das zugehörige Argument `false` entfernt. Andere Funktionen und die übrigen Kommentare bleiben erhalten.
+- **[KI]** Damit besteht das frühere Problem aus Punkt 21 erneut: Beim Nachfüllen verschiebt `main.js` die Karte zunächst nach `openCards`, danach verschiebt `deleteFromStack()` sie nach `laidCards`. Dies ist eine gezielte Rücknahme, keine Behebung von BUG-004. Die historischen Einträge zum Einbau bleiben erhalten. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.25 Ursprüngliche Stapelverwaltung wiederhergestellt – [KI], 14.11.2026
+
+- **[Arun]** Hat die Rückkehr zum Verschieben mit unbedingtem Einfügen in `laidCards` gewünscht.
+- **[KI]** `getOldLocation()` und die neue Zielprüfung in `deleteFromStack()` zurückgenommen. Die Funktion nimmt wieder vier Argumente entgegen und fügt die entfernte Karte immer in `laidCards` ein. Der fehlende fünfte Parameter verursachte zuvor beim Verschieben einer Zehnerstapel-Karte einen Fehler beim Zugriff auf `newLocation.classList`, bevor die nächste Karte freigeschaltet werden konnte.
+- **[KI]** `main.js` und `moveCardsToPlayArea()` bleiben bei dieser Änderung unverändert. BUG-004 und die bekannte falsche Zuordnung nach `laidCards` beim Nachfüllen bleiben bestehen. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.26 Ablegeablauf aus Commit `774ec17` wiederhergestellt – [KI], 14.11.2026
+
+- **[Arun]** Hat verlangt, den früheren Stand des visuellen Verschiebens in der Git-Historie zu suchen und wiederherzustellen.
+- **[KI]** Der Vergleich zeigt: `774ec17` (26.10.2026) enthält das Verschieben ohne Regelprüfung und die bekannte Zuordnung nach `laidCards`. `24a8744` ergänzte später in `main.js` sowohl `updateStacks` als auch die Prüfungen für Farbe und Zahl. Die bisherigen Rücknahmen hatten diese Regelprüfungen stehen lassen.
+- **[KI]** Die Regelprüfungen beim Ablegen in `main.js` und den dadurch ungenutzten Import von `rules.js` zurückgenommen. Alle drei Karten-Klickhandler sowie der ausführbare Inhalt von `move-cards.js` entsprechen nun `774ec17`; dies wurde durch einen Vergleich ohne Kommentare und Leerzeichen geprüft. Die spätere Prüfung der Spielerfarbe und die Verwendung von `sessionStorage` beim Verlassen bleiben erhalten.
+- **[KI]** Dieser historische Stand ist nicht vollständig fehlerfrei: Insbesondere das Ablegen auf eine belegte offene Karte (BUG-004) und die falsche Zuordnung nach `laidCards` beim Nachfüllen bleiben bestehen. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.27 Regelprüfungen wiederhergestellt und unsichtbares Kartenbild korrigiert – [KI], 14.11.2026
+
+- **[Arun]** Hat klargestellt, dass die Erweiterungen aus `rules.js` erhalten bleiben müssen und eine Zehnerstapel-Karte beim Ablegen auf eine offene Karte sichtbar bleiben soll.
+- **[KI]** Die in 3.26 irrtümlich entfernten Regelprüfungen samt Import wiederhergestellt: Auf freie Spielfelder darf nur eine 1, auf liegende Spielfeldkarten nur dieselbe Farbe mit Wert +1.
+- **[KI]** Im Klickhandler der offenen Karten wird mit `closest(".openCardsElement")` der Zielcontainer bestimmt. Bild- und Randklick treffen dadurch denselben Platz. Ungültige Ziele und das Ablegen auf sich selbst werden abgefangen. Das bisherige Kartenbild wird entfernt und die neue Karte in das umgebende `div` verschoben. Der fehlerhafte Aufruf mit einem möglichen `img` als Ziel bleibt mit Erklärung auskommentiert erhalten.
+- **[KI]** Die Listenverwaltung wurde nicht geändert; die bekannte Zuordnung nach `laidCards` und die verbleibenden Daten der ersetzten offenen Karte sind damit nicht behoben. Die frühere Behauptung, die Rücknahme der Regelprüfungen entspreche dem gewünschten Verhalten, war falsch.
+- **[KI]** Syntaxprüfung und acht Fälle mit den tatsächlichen Klickhandlern, `rules.js`, Kartendaten und einer DOM-Nachbildung bestanden: Bildklick, Randklick, leerer offener Platz, 1 und Nicht-1 auf freies Spielfeld sowie passende Zahl, falsche Zahl und falsche Farbe auf eine Spielfeldkarte. Keine visuelle Browserprüfung durchgeführt. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.28 Direkter Funktionsaufruf beim Nachfüllen – [KI], 14.11.2026
+
+- **[Arun]** Hat den direkten Aufruf der Verschiebefunktion im Klickhandler der offenen Karten in `main.js` beauftragt.
+- **[KI]** Die inzwischen leere Suchschleife mit Erklärung auskommentiert. Der Handler entfernt wieder das bisherige Bild am Zielplatz und ruft `moveCardsToPlayArea()` direkt auf; die Listenänderung übernimmt ausschliesslich die dort aufgerufene Funktion `deleteFromStack()`.
+- **[KI]** `move-cards.js` bleibt unverändert. Dort sind beim Aufruf von `getOldLocation()` weiterhin `openCards` und `tenStack` vertauscht; die richtige Listenzuordnung ist deshalb noch nicht gewährleistet. Das Datenobjekt einer ersetzten offenen Karte wird ebenfalls weiterhin nicht entfernt. Diese Ergänzung wartet noch auf die Prüfung durch Arun.
+
+### 3.29 Nachfüllen nur auf leere offene Plätze, Zielprüfung in `deleteFromStack()` – [Arun], 14.11.2026
+
+- **[Arun]** `main.js`, Klickhandler der offenen Karten (Zeile 53): Eine Zehnerstapel-Karte darf nur noch auf einen **leeren** offenen Platz gelegt werden. Ist im Platz schon ein Bild, bricht der Handler mit `return` ab. Damit kann eine Karte nicht mehr in einem belegten Platz verschwinden (BUG-004 behoben).
+- **[Arun]** `move-cards.js`: Neue Hilfsfunktion `getOldLocation()` bestimmt, aus welchem Stapel eine Karte stammt. `deleteFromStack()` bekommt wieder `newLocation` als fünften Parameter: Kommt die Karte vom Zehnerstapel und ist das Ziel ein offener Platz (`openCardsElement`), soll sie in `openCards` statt in `laidCards` eingefügt werden. `moveCardsToPlayArea()` reicht `newLocation` weiter.
+- **[KI]** Bug-Check nach Regel 7: Die Zuordnung nach `openCards` greift noch nicht, weil `getOldLocation()` mit vertauschten Argumenten (`openCards` und `tenStack`) aufgerufen wird. Die nachgefüllte Karte landet weiterhin in `laidCards` (neu als BUG-010, in Node bestätigt). Zudem lässt sich mit ausgewählter Zehnerstapel-Karte keine offene Karte mehr auswählen (BUG-011). BUG-004 aus `Bugs.md` entfernt, Zeilenangaben von BUG-005, BUG-006 und BUG-007 nachgeführt.
+- **[KI]** Hinweis: Durch Zeile 53 ist Zeile 60 (`targetSlot.querySelector("img")?.remove()`) wirkungslos, da der Platz an dieser Stelle immer leer ist. Die Kommentare in `move-cards.js` (Zeilen 25, 37, 58 und die JSDoc von `deleteFromStack()`) beschreiben noch den Stand „immer nach `laidCards`“ und passen nicht mehr zum Code. Die Angaben in 3.27 und 3.28 zum Ersetzen des bisherigen Kartenbilds sind durch diese Änderung überholt.
+
+### 3.30 BUG-010 behoben und Kommentare nachgeführt – [Arun]/[KI], 14.11.2026
+
+- **[Arun]** `move-cards.js`, Zeile 30: Die Argumente beim Aufruf von `getOldLocation()` in die Reihenfolge der Signatur gebracht (`tenStack, openCards`). Eine Zehnerstapel-Karte, die auf einen leeren offenen Platz gelegt wird, landet jetzt in `openCards` statt in `laidCards` (BUG-010 behoben).
+- **[KI]** In Node geprüft: Zehnerstapel → offener Platz ergibt `openCards`, Zehnerstapel → Spielfeld und offene Karte → Spielfeld ergeben `laidCards`. BUG-010 aus `Bugs.md` entfernt. Die Aussage in 3.29, dass die Zuordnung nach `openCards` noch nicht greift, ist damit überholt.
+- **[KI]** Auf Wunsch von Arun veraltete Kommentare korrigiert, nur Kommentare, Zeilenzahl gleich:
+  - `move-cards.js`: Kommentar zu `getOldLocation()` ergänzt; JSDoc und Zeilenkommentare von `deleteFromStack()` beschreiben jetzt die Unterscheidung `openCards`/`laidCards` statt „immer nach `laidCards`“; Kommentar beim Aufruf in `moveCardsToPlayArea()` angepasst.
+  - `main.js`: JSDoc des Klickhandlers der offenen Karten (nur leere Plätze), Kommentar zur Leer-Prüfung in Zeile 53 ergänzt, Kommentar in Zeile 60 weist jetzt darauf hin, dass die Zeile wirkungslos ist.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -408,6 +456,15 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 14.11.2026 | [Arun] | `move-cards.js`: Argumentreihenfolge beim Aufruf von `getOldLocation()` korrigiert, BUG-010 behoben (siehe 3.30). |
+| 14.11.2026 | [KI] | Veraltete Kommentare in `main.js` und `move-cards.js` korrigiert; Bug-Check: BUG-010 aus `Bugs.md` entfernt (siehe 3.30). |
+| 14.11.2026 | [Arun] | `main.js`: Zehnerstapel-Karte nur noch auf leere offene Plätze legen; `move-cards.js`: `getOldLocation()` und Zielprüfung in `deleteFromStack()` ergänzt (siehe 3.29). |
+| 14.11.2026 | [KI] | Bug-Check nach Regel 7: BUG-004 als behoben entfernt, BUG-010 und BUG-011 neu eingetragen, Zeilenangaben in `Bugs.md` nachgeführt (siehe 3.29). |
+| 14.11.2026 | [KI] | Leere Suchschleife in main.js auskommentiert; beim Nachfüllen moveCardsToPlayArea() direkt aufrufen und das bisherige Zielbild entfernen (siehe 3.28). |
+| 14.11.2026 | [KI] | Irrtümliche Rücknahme der Regeln korrigiert; offene Karten über ihren div-Container als Ziel ersetzen, damit das neue Bild sichtbar bleibt. Listenverwaltung unverändert; siehe 3.27. |
+| 14.11.2026 | [KI] | Karten-Klickhandler auf den Ablauf aus 774ec17 zurückgeführt: wieder ohne Farb- und Zahlenprüfung ablegen; Historienvergleich als 3.26 dokumentiert. |
+| 14.11.2026 | [KI] | Auf Wunsch von Arun die neue Herkunfts- und Zielprüfung in move-cards.js zurückgenommen; deleteFromStack() legt Karten wieder immer in laidCards ab (siehe 3.25). |
+| 14.11.2026 | [KI] | Auf Wunsch von Arun ausschliesslich die Ergänzung `updateStacks` samt Bedingung, Parameter-Kommentar und Argument `false` zurückgenommen; ursprünglicher unbedingter Aufruf von `deleteFromStack()` wiederhergestellt. Das frühere Problem aus Punkt 21 besteht dadurch erneut (siehe 3.24). |
 | 13.11.2026 | [Arun] | `main.js`: Farbe am Anfang prüfen, sonst Meldung, zurück zu `index.html` und Abbruch; `shuffle.py`: Import `from .. cards import CARDS` entfernt (noch nicht committet) |
 | 13.11.2026 | [KI] | Bug-Check nach Regel 7: BUG-001 als behoben entfernt, BUG-003 auf „Klein“ herabgestuft, Zeilenangaben in `Bugs.md` nachgeführt; Änderungen von Arun als 3.23 dokumentiert |
 | 13.11.2026 | [KI] | Auf Wunsch von Arun alle Kommentare geprüft, veraltete und falsche Kommentare in `login.js`, `move-cards.js`, `create-stack.js` und `game.html` korrigiert (nur Kommentare, Zeilenzahl gleich); als 3.22 dokumentiert |
