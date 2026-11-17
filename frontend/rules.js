@@ -44,7 +44,10 @@ export function getColor(card) {
  * @returns {boolean}
  */
 export function isAllowed(targetCard, currentCard) {
-    if (targetCard === null && getNumber(currentCard) === 1) {
+    if (targetCard === null && getNumber(currentCard) !== 1) {
+        return false;
+    }
+    else if (targetCard === null && getNumber(currentCard) === 1) {
         return true;
     } else if (getColor(targetCard) === getColor(currentCard)
         && (Number(getNumber(targetCard)) + 1 === Number(getNumber(currentCard)))) {

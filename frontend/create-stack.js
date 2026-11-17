@@ -297,10 +297,10 @@ export function createDOMStack(openCards, tenStack, handCards) {
     // newImage.style.border = "2px solid black";
     // newImage.style.borderRadius = "10px";
 
-    const stackOffset = Math.max(0, tenStack.length - 1) * 2; // Berechnet den Gesamtversatz auch bei weniger als zehn Karten.
+    const stackOffset = Math.max(0, tenStack.length - 1) * 2.5;
     newDiv.style.position = "relative"; // Macht den Container zum Bezugspunkt der absolut positionierten Karten.
-    newDiv.style.width = `${84 + stackOffset}px`; // Reserviert 80 px Bildbreite, 4 px Rahmen und den Gesamtversatz. Achtung: Bilder sind nur 60 px breit (BUG-008).
-    newDiv.style.height = `${124 + stackOffset}px`; // Reserviert 120 px Bildhöhe, 4 px Rahmen und den Gesamtversatz. Achtung: Bilder sind nur 90 px hoch (BUG-008).
+    newDiv.style.width = `${64 + stackOffset}px`;
+    newDiv.style.height = `${94 + stackOffset}px`;
     newDiv.style.isolation = "isolate"; // Beschränkt die Stapelreihenfolge auf diesen Container.
 
     for (let i = 0; i < tenStack.length; i++) { // Erstellt ein eigenes Bild für jede vorhandene Stapelkarte.

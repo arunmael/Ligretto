@@ -420,6 +420,18 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[Arun]** Hat gewünscht, dass `Bugs.md` immer nach Dringlichkeit sortiert ist. **[KI]** Regel in `AGENTS.md` (Abschnitt „Format von `Bugs.md`“) ergänzt und die offenen Bugs neu sortiert: BUG-006 (Fehlverhalten im Spiel), BUG-005 (Konsolenfehler), BUG-009 (Bedienbarkeit Startseite), BUG-008 (Layout), BUG-007 (zurzeit nicht auslösbar).
 - **[KI]** Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs. `getDivideStack()` mit allen vier Spielerfarben (je 10/3/27 Karten) sowie mit `"red"`, `None` und `""` (`ValueError`) geprüft. Die offenen Einträge BUG-005 bis BUG-009 bestehen unverändert an denselben Zeilen, die Sortierung nach Dringlichkeit bleibt gültig.
 
+### 3.34 BUG-005, BUG-006, BUG-007, BUG-008, BUG-009 und BUG-013 behoben – [Arun]/[KI], 17.11.2026
+
+- **[Arun]** `main.js`, Klickhandler von `playArea`: `activeField.style.border = "2px solid black"` steht nicht mehr am Anfang des Handlers, sondern zusammen mit `activeField = null` nur noch in den beiden Zweigen, in denen die Karte wirklich gelegt wird (Zeilen 119/120 auf eine Karte, Zeilen 127/128 auf ein leeres Feld). Bei einem verbotenen Zug bleibt die Karte ausgewählt **und** grün umrandet. Vorher wurde der Rahmen schwarz, die Karte blieb aber ausgewählt (BUG-006 behoben).
+- **[Arun]** `main.js`, Zeilen 106 bis 108: Ist keine Karte ausgewählt (`activeField === null`), endet der Handler sofort. `rules.getNumber()` und `rules.isAllowed()` werden nicht mehr mit `null` aufgerufen (BUG-005 behoben). Der `FIXME`-Kommentar dazu wurde entfernt.
+- **[KI]** `create-stack.js`, `createDOMStack()`, Zeilen 300 bis 303: Der Container des Zehnerstapels rechnet jetzt mit der echten Bildgrösse 60 × 90 px plus 4 px Rahmen (`64` bzw. `94`) und mit 2,5 px Versatz pro Karte. Bei zehn Karten ist er 86,5 × 116,5 px gross statt 102 × 142 px (BUG-008 behoben). Diese Änderung stammt laut Änderungsprotokoll von einer KI-Sitzung. Der ursprüngliche Abschnitt 3.35 dazu wurde beim Nachführen von 3.34 versehentlich überschrieben und ist hier zusammengefasst.
+- **[Arun]** `index.html`, Zeile 20: Das Label zeigt mit `for="roomIdInput"` jetzt auf die richtige ID des Eingabefelds. Ein Klick auf den Text setzt den Cursor ins Feld (BUG-009 behoben).
+- **[KI]** Bug-Check nach Regel 7: BUG-005, BUG-006, BUG-008 und BUG-009 aus `Bugs.md` entfernt. **Neu BUG-013 (Kritisch):** Beim Entfernen der `FIXME`-Zeile in `main.js` wurde auch das schliessende `*/` des Kommentars ab Zeile 98 gelöscht. `main.js` hat dadurch einen Syntaxfehler und wird gar nicht geladen, die Spielseite bleibt leer (mit `node --check` bestätigt). Die Fixes von BUG-005 und BUG-006 wirken erst, wenn BUG-013 behoben ist. BUG-007 bleibt offen (Arun behebt ihn als Nächstes), Zeilenangabe nachgeführt.
+- **[Arun]** `main.js`, Zeile 102: Das schliessende `*/` des JSDoc-Kommentars wieder eingefügt. `main.js` lädt wieder (BUG-013 behoben, mit `node --check` geprüft).
+- **[Arun]** `rules.js`, `isAllowed()`, Zeilen 47 bis 49: Ist `targetCard` `null` und die Karte keine 1, gibt die Funktion jetzt `false` zurück, statt `getColor(null)` aufzurufen und abzustürzen (BUG-007 behoben). Mit einer echten Zielkarte verhält sie sich wie vorher.
+- **[KI]** Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs. Alle Änderungen in `main.js`, `rules.js`, `create-stack.js` und `index.html` geprüft, alle JS-Dateien mit `node --check` ohne Fehler. BUG-013 und BUG-007 aus `Bugs.md` entfernt, es gibt keine offenen Bugs mehr. Punkt 31 in Kapitel 4 ist damit ebenfalls erledigt.
+- **[KI]** Hinweise: Der Rückgabetext `"Select a card ..."` in Zeile 107 wird nirgends angezeigt, weil der Browser den Rückgabewert eines Event-Listeners ignoriert. In `create-stack.js` sind die Kommentare der Zeilen 300, 302 und 303 entfernt worden, und die neuen bzw. geänderten Zeilen in `main.js`, `rules.js` und `create-stack.js` haben noch keine Kommentare.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -434,7 +446,7 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 8. `create-stack.js`, `createPlayeArea()`: `newDiv.classList.add = "playAreaField"` überschreibt die Methode `add` mit einem String, statt die Klasse zu setzen. Richtig wäre `newDiv.classList.add("playAreaField")`. Ausserdem ist der Funktionsname vermutlich ein Tippfehler (`createPlayArea`).
 9. `game.css`, am Ende der `main`-Regel steht ein verirrtes `^` nach `gap: 8px;`. Das kann die Regel ungültig machen.
 10. `game.css`: Die `main`-Regel setzt `grid-template-rows`, aber kein `display: grid`. Ob das aus `styles.css` kommt, ist ungeprüft; sonst wirkt sie nicht. Zudem sind `#playArea { grid-area: 2 / 2; }` und die Regeln für `body` doppelt bzw. überschneiden sich mit `styles.css`.
-11. Zehnerstapel: Die Container-Masse rechnen mit Bildgrösse 80 × 120 px und 2 px Versatz, die Bilder sind aber 60 × 90 px mit `i * 2.5` px Versatz. Der Container ist dadurch zu gross bzw. der Versatz wird nicht korrekt eingerechnet.
+11. **Behoben am 17.11.2026 [KI]:** Die Container-Masse des Zehnerstapels berücksichtigen jetzt 60 × 90 px Bildgrösse, 4 px Rahmen und 2,5 px Versatz je Karte (siehe 3.34).
 12. Die Stapelkarten haben `width: 60px` / `height: 90px` zuzüglich 2 px Rahmen. Je nach `box-sizing` sind sie 4 px grösser als angegeben.
 
 13. `game.html`: `type="mdoule"` ist ein Tippfehler. Der Browser lädt das Script deshalb nicht als Modul. Das ist hier harmlos, weil `main.js` die Datei ohnehin importiert. Das Tag kann auch ganz weg.
@@ -466,7 +478,7 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 36. `shuffle.py`, `getPlayerCards`: Der `counter` ist unnötig. `i` ist bereits die Karte, `i["owner"]` reicht statt `CARDS[counter]["owner"]`. Auch in `getDivideStack` ist `counter >= 10 and` doppelt, weil der erste Zweig das schon ausschliesst. Der Tippfehler `shuffeldCards` ist nur kosmetisch.
 37. `.gitignore`: Python-Einträge wie `__pycache__/` und `.venv/` fehlen, die Datei ist die Node-Vorlage. Ausserdem ist `.DS_Store` wieder geändert (siehe Punkt 6).
 
-Erledigt seit der letzten Version: `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
+Erledigt seit der letzten Version: Punkte 15 (Klick ohne Auswahl), 31 (`isAllowed()` mit `null`) und 32 (Auswahl bei verbotenem Zug), siehe 3.34; `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
 
 Offene Bugs werden seit dem 13.11.2026 zusätzlich in `Dokumentation/Bugs.md` geführt (Regel 7).
 
@@ -478,6 +490,11 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 17.11.2026 | [Arun] | `main.js`: schliessendes `*/` wieder eingefügt (BUG-013 behoben); `rules.js`: `isAllowed()` gibt bei `null` und Nicht-1 `false` zurück (BUG-007 behoben) (siehe 3.34). |
+| 17.11.2026 | [KI] | Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs, BUG-007 und BUG-013 aus `Bugs.md` entfernt, keine offenen Bugs mehr (siehe 3.34). |
+| 17.11.2026 | [KI] | Containergrösse des Zehnerstapels an Bildgrösse und Versatz angepasst (BUG-008 behoben; siehe 3.34). |
+| 17.11.2026 | [Arun] | `main.js`: Auswahl nur nach erfolgreichem Zug zurücksetzen (BUG-006), Abbruch ohne ausgewählte Karte (BUG-005); `index.html`: Label-`for` korrigiert (BUG-009) (siehe 3.34). |
+| 17.11.2026 | [KI] | Bug-Check nach Regel 7: BUG-005, BUG-006, BUG-008, BUG-009 aus `Bugs.md` entfernt, BUG-013 (Kritisch, Syntaxfehler in `main.js`) neu, BUG-007 nachgeführt; dabei versehentlich überschriebenen Abschnitt 3.35 (BUG-008) in 3.34 zusammengefasst (siehe 3.34). |
 | 14.11.2026 | [Arun] | `shuffle.py`: Farbprüfung nach der Schleife, `ValueError` statt Text, Import und Tippfehler korrigiert (BUG-012, BUG-002 behoben; siehe 3.33). |
 | 14.11.2026 | [KI] | `Bugs.md` bereinigt und nach Dringlichkeit sortiert; Sortierregel in `AGENTS.md` ergänzt (siehe 3.33). |
 | 14.11.2026 | [Arun] | `main.js`: belegte offene Karte trotz Zehnerstapel-Auswahl wählbar (BUG-011 behoben); `create-stack.js`: Farbprüfung in `getDeck()` (BUG-003 behoben); `shuffle.py`: Prüfung auf unbekannte Farbe begonnen (siehe 3.32). |

@@ -99,12 +99,13 @@ document.addEventListener("DOMContentLoaded", () => {
      * Klick auf das Spielfeld: legt die ausgewählte Karte ab.
      * - Auf Karten nur gleiche Farbe und Wert +1; auf leere Felder nur eine 1.
      * - Eine liegende Zielkarte wird aus dem DOM entfernt, bleibt aber in laidCards.
-     * FIXME: Ist keine Karte ausgewählt (activeField === null), wirft activeField.style einen Fehler.
      */
     playArea.addEventListener("click", (event) => {
         const newLocation = event.target;
         if (newLocation.className !== "playAreaField" && !(newLocation instanceof HTMLImageElement)) return;
-        activeField.style.border = "2px solid black";
+        if (activeField === null) {
+            return "Select a card before trying to lay one down.";
+        }
         const card = activeField;
         const openCards = playerStartStacks.openCards;
         const tenStack = playerStartStacks.tenStack;
@@ -115,14 +116,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 newLocation.remove(); // Entfernt die Zielkarte erst, nachdem der Zug erlaubt wurde.
                 console.log("removed"); // Behält die bestehende Ausgabe bei einem erlaubten Zug bei.
                 moveCards.moveCardsToPlayArea(card, parent, openCards, tenStack, handCards); // Legt die erlaubte Karte in den gemeinsamen Spielfeld-Container.
+                activeField.style.border = "2px solid black";
+                activeField = null;
             } else { // Lässt bei einem verbotenen Zug beide Karten an ihrem bisherigen Platz.
                 console.log("not Allowed"); // Meldet wie zuvor, dass rules.js den Zug ablehnt.
             } // Beendet die wiederhergestellte Regelprüfung.
         } else {
             if (rules.getNumber(card) !== 1) return; // Stellt die bestehende Regel wieder her: Ein leerer Stapel beginnt mit einer 1.
             moveCards.moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards);
+            activeField.style.border = "2px solid black";
+            activeField = null;
         }
-
-        activeField = null;
     });
 });
