@@ -1,0 +1,12 @@
+# [KI] 17.11.2026 auf Wunsch von Arun erstellt mit "pip freeze"
+# Installieren: python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+# Feste Versionen (==), damit auf jedem Rechner genau dieselbe Umgebung entsteht
+
+# --- Direkt gebraucht ---
+pytest==9.2.0  # Test-Framework für die Backend-Logik (shuffle.py, rules.py)
+
+# --- Abhängigkeiten von pytest (werden automatisch mitinstalliert, hier fixiert für gleiche Versionen) ---
+iniconfig==2.3.1  # liest die pytest-Konfiguration (pytest.ini / setup.cfg)
+packaging==26.3  # vergleicht Versionsnummern, braucht pytest intern
+pluggy==1.7.0  # Plugin-System von pytest
+Pygments==2.21.0  # färbt Code in Fehlermeldungen von pytest ein

@@ -139,3 +139,26 @@ Immer in dieser Reihenfolge:
 5. **Ausgeführte Befehle:** Welche Tests oder Builds du laufen gelassen hast und bestätigen, dass `git status` danach gleich ist wie vorher (bis auf `Bugs.md`).
 
 Wenn nichts gefunden wurde, sag das klar, statt etwas zu erfinden.
+## 8. Technische Dokumentation
+
+### Was
+`Dokumentation/Technische-Doku.md` beschreibt den **aktuellen Aufbau** des Projekts: Dateien, Funktionen, Datenmodell, Ablauf und Spielregeln. Sie ist kein Protokoll. Was wann von wem geändert wurde, steht weiterhin in `Dokumentation/Dokumentation.md` (Regel 4).
+
+### Wann anpassen
+Jedes Mal, wenn ich dich bitte zu dokumentieren, prüfst du **nach** dem Bug Check (Regel 7), ob sich durch die Änderungen am Aufbau etwas geändert hat. Nur dann passt du die technische Doku an:
+* eine Datei oder ein Ordner kommt dazu, wird umbenannt oder gelöscht
+* eine Funktion kommt dazu, wird umbenannt oder gelöscht
+* Parameter oder Rückgabewerte einer Funktion ändern sich
+* der Ablauf ändert sich (z. B. wenn Frontend und Backend verbunden werden)
+* Datenmodell, IDs im DOM oder Spielregeln ändern sich
+
+Bugfixes und kleine Änderungen ohne Auswirkung auf den Aufbau ändern die technische Doku **nicht**.
+
+### Wie
+* Beschreibe immer den aktuellen Stand und überschreibe veraltete Angaben. Es gibt keine Einträge wie „neu am …“, dafür ist das Änderungsprotokoll da.
+* Keine Zeilennummern, denn sie veralten bei jeder Änderung. Verweise auf Dateien und Funktionsnamen.
+* Keine Kennzeichnung mit [KI] und [Arun] pro Abschnitt. Der Hinweis zuoberst reicht.
+* Datum „Stand“ oben in der Datei aktualisieren.
+* Lies die Datei direkt vor dem Bearbeiten neu ein, damit keine Änderungen von anderen überschrieben werden.
+* Im Chat kurz sagen, ob und welche Abschnitte angepasst wurden. Wenn nichts angepasst werden musste, auch das sagen.
+* Deutsch mit Umlauten (ä, ö, ü) schreiben.

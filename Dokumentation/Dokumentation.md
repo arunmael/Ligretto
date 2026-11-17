@@ -26,15 +26,18 @@ Jeder Abschnitt und jeder Eintrag ist mit einer dieser Markierungen versehen.
 ```
 Ligretto/
 ├── README.md              [Arun] Initial commit, [KI] am 13.10.2026 ausgebaut
-├── .gitignore             [Arun] Initial commit
+├── .gitignore             [Arun] Initial commit, [KI] am 17.11.2026 um Python/macOS ergänzt
+├── .venv/                 [KI] virtuelle Python-Umgebung (wird nicht gepusht)
 ├── AGENTS.md              [KI] Regeln für KI-Agenten
 ├── Dokumentation/
-│   └── Dokumentation.md   [KI] diese Datei
+│   ├── Dokumentation.md   [KI] diese Datei (Arbeits- und Änderungsprotokoll)
+│   ├── Technische-Doku.md [KI] aktueller Aufbau: Dateien, Funktionen, Ablauf
+│   └── Bugs.md            [KI] offene Bugs (Regel 7)
 ├── backend/               [Arun] Backend-Ordner
 │   ├── cards.py           [Arun] Datei angelegt, [KI] Kartenliste eingefügt
 │   ├── connection/        [Arun] angelegt, noch leer (wird von Git noch nicht erfasst)
 │   └── logic/
-│       ├── rules.py       [Arun] angelegt, noch leer
+│       ├── rules.py       [Arun] Spielregeln (Farbe, Wert +1, leeres Feld nur 1) in Python
 │       └── shuffle.py     [Arun] Spielerkarten mischen und auf drei Stapel verteilen, [KI] Docstrings
 └── frontend/
     ├── index.html         [Arun] Startseite / Login
@@ -432,6 +435,30 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs. Alle Änderungen in `main.js`, `rules.js`, `create-stack.js` und `index.html` geprüft, alle JS-Dateien mit `node --check` ohne Fehler. BUG-013 und BUG-007 aus `Bugs.md` entfernt, es gibt keine offenen Bugs mehr. Punkt 31 in Kapitel 4 ist damit ebenfalls erledigt.
 - **[KI]** Hinweise: Der Rückgabetext `"Select a card ..."` in Zeile 107 wird nirgends angezeigt, weil der Browser den Rückgabewert eines Event-Listeners ignoriert. In `create-stack.js` sind die Kommentare der Zeilen 300, 302 und 303 entfernt worden, und die neuen bzw. geänderten Zeilen in `main.js`, `rules.js` und `create-stack.js` haben noch keine Kommentare.
 
+### 3.35 Spielregeln im Backend: `backend/logic/rules.py` – [Arun], dokumentiert von [KI], 17.11.2026
+
+- **[Arun]** Die bisher leere Datei `backend/logic/rules.py` enthält jetzt die Spielregeln aus `frontend/rules.js` in Python:
+  - `getId(card)`: entfernt das Präfix `image` (5 Zeichen) und gibt die Karten-ID zurück.
+  - `getNumber(card, CARDS)` und `getColor(card, CARDS)`: suchen die Karte in `CARDS` und geben Wert bzw. Farbe zurück. Bei einer unbekannten Karte kommt `0` bzw. `""` zurück.
+  - `isAllowed(targetCard, currentCard, CARDS)`: Ohne Zielkarte (`None`) ist nur eine 1 erlaubt. Sonst muss die Farbe gleich und der Wert genau um 1 höher sein. Das Verhalten von BUG-007 ist hier von Anfang an berücksichtigt: Bei `None` wird `getColor()` nie mit `None` aufgerufen.
+  - Anders als in `rules.js` wird `CARDS` als Parameter übergeben statt importiert.
+- **[KI]** Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs. Mit der echten Kartenliste aus `backend/cards.py` geprüft: `None` + 1 → `True`, `None` + 2 → `False`, 1 → 2 gleiche Farbe → `True`, andere Farbe → `False`, 2 → 1 → `False`, unbekannte Karten → `False`.
+- **[KI]** Hinweise: `rules.py` wird noch von keiner Datei verwendet. Die Funktionen erwarten Karten-IDs **mit** Präfix `image` (wie die DOM-IDs im Frontend). Eine ID ohne Präfix wie `"blue-blue-1"` wird falsch gekürzt und ergibt still `False`. Mit `currentCard = None` entsteht ein `TypeError`, wie im Frontend. Darauf muss geachtet werden, sobald das Backend Züge vom Frontend entgegennimmt. Die Variable `id` überdeckt die eingebaute Python-Funktion `id()`, das ist aber kein Fehler.
+
+### 3.36 Virtuelle Python-Umgebung und `.gitignore` erweitert – [KI], 17.11.2026
+
+- **[Arun]** Hat ein venv für das Projekt und eine `.gitignore` gewünscht, die alles ignoriert, was nicht ins Repo gehört.
+- **[KI]** Virtuelle Umgebung `.venv/` im Projektordner mit `python3 -m venv .venv` erstellt (Python 3.14.8). Aktivieren mit `source .venv/bin/activate`, danach z. B. `pip install pytest`. Installiert ist bisher nur `pytest` (siehe unten).
+- **[KI]** `.gitignore` oben um eigene Abschnitte ergänzt, die ursprüngliche Node-Vorlage steht unverändert darunter. Neu ignoriert: `.venv/`, `venv/`, `env/`, `__pycache__/`, `*.py[cod]`, `.pytest_cache/`, `.coverage`, `htmlcov/`, `.DS_Store`, `._*`, `.vscode/`, `.idea/`, `*.swp` und `.claude/settings.local.json`. `.env` war schon durch die Node-Vorlage abgedeckt. Mit `git check-ignore` geprüft.
+- **[KI]** Die fünf `.DS_Store`-Dateien (`.DS_Store`, `backend/`, `frontend/`, `frontend/images/`, `frontend/images/back/`) waren schon im Repo und wären trotz `.gitignore` weiter verfolgt worden. Auf Wunsch von Arun mit `git rm --cached` aus dem Repo entfernt. Die Dateien auf dem Mac bleiben erhalten, sie werden nur nicht mehr gepusht.
+- **[KI]** Auf Wunsch von Arun `pytest` 9.2.0 ins venv installiert (für die geplanten Tests von `rules.py`).
+
+### 3.37 Technische Dokumentation und Regel 8 in `AGENTS.md` – [KI], 17.11.2026
+
+- **[Arun]** Hat eine technische Doku gewünscht, getrennt vom Arbeitsprotokoll, die nur bei Änderungen am Aufbau nachgeführt wird.
+- **[KI]** Neue Datei `Dokumentation/Technische-Doku.md` mit dem aktuellen Stand: Überblick, Starten, Projektstruktur, Ablauf (mit Diagramm), Datenmodell und DOM-IDs, alle Frontend- und Backend-Funktionen, Interaktion beim Auswählen und Legen, Spielregeln, Layout, bekannte Einschränkungen, Pflege der Datei. Geschrieben aus dem aktuellen Code, nicht aus dem Protokoll.
+- **[KI]** `AGENTS.md` um Regel 8 „Technische Dokumentation“ ergänzt: Beim Dokumentieren wird nach dem Bug Check geprüft, ob sich der Aufbau geändert hat (Dateien, Funktionen, Parameter, Ablauf, Datenmodell, Regeln). Nur dann wird die technische Doku angepasst, ohne Zeilennummern und ohne [KI]/[Arun] pro Abschnitt.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -478,7 +505,7 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 36. `shuffle.py`, `getPlayerCards`: Der `counter` ist unnötig. `i` ist bereits die Karte, `i["owner"]` reicht statt `CARDS[counter]["owner"]`. Auch in `getDivideStack` ist `counter >= 10 and` doppelt, weil der erste Zweig das schon ausschliesst. Der Tippfehler `shuffeldCards` ist nur kosmetisch.
 37. `.gitignore`: Python-Einträge wie `__pycache__/` und `.venv/` fehlen, die Datei ist die Node-Vorlage. Ausserdem ist `.DS_Store` wieder geändert (siehe Punkt 6).
 
-Erledigt seit der letzten Version: Punkte 15 (Klick ohne Auswahl), 31 (`isAllowed()` mit `null`) und 32 (Auswahl bei verbotenem Zug), siehe 3.34; `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
+Erledigt seit der letzten Version: Punkte 6 und 37 (`.gitignore` für `.DS_Store` und Python, siehe 3.36), Punkte 15 (Klick ohne Auswahl), 31 (`isAllowed()` mit `null`) und 32 (Auswahl bei verbotenem Zug), siehe 3.34; `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
 
 Offene Bugs werden seit dem 13.11.2026 zusätzlich in `Dokumentation/Bugs.md` geführt (Regel 7).
 
@@ -490,6 +517,10 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 17.11.2026 | [KI] | Auf Wunsch von Arun: `Dokumentation/Technische-Doku.md` erstellt, Regel 8 „Technische Dokumentation“ in `AGENTS.md` ergänzt (siehe 3.37). |
+| 17.11.2026 | [KI] | Auf Wunsch von Arun: venv `.venv/` erstellt, `.gitignore` um Python, venv, macOS, Editoren und lokale Claude-Einstellungen ergänzt, getrackte `.DS_Store`-Dateien aus dem Repo entfernt, `pytest` ins venv installiert (siehe 3.36). |
+| 17.11.2026 | [Arun] | `backend/logic/rules.py`: `getId()`, `getNumber()`, `getColor()` und `isAllowed()` als Python-Version der Spielregeln (siehe 3.35). |
+| 17.11.2026 | [KI] | Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs, `rules.py` mit echter Kartenliste getestet, Projektstruktur nachgeführt (siehe 3.35). |
 | 17.11.2026 | [Arun] | `main.js`: schliessendes `*/` wieder eingefügt (BUG-013 behoben); `rules.js`: `isAllowed()` gibt bei `null` und Nicht-1 `false` zurück (BUG-007 behoben) (siehe 3.34). |
 | 17.11.2026 | [KI] | Bug-Check nach Regel 7 vor dem Commit: keine neuen Bugs, BUG-007 und BUG-013 aus `Bugs.md` entfernt, keine offenen Bugs mehr (siehe 3.34). |
 | 17.11.2026 | [KI] | Containergrösse des Zehnerstapels an Bildgrösse und Versatz angepasst (BUG-008 behoben; siehe 3.34). |

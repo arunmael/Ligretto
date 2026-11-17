@@ -1,3 +1,52 @@
+# ============================================================
+# [KI] 17.11.2026 auf Wunsch von Arun ergänzt: Python, venv, macOS, Editoren
+# Die ursprüngliche Node-Vorlage steht unverändert weiter unten.
+# ============================================================
+
+# --- Python-Umgebung ---
+# virtuelle Umgebung: wird lokal mit "python3 -m venv .venv" erstellt, gehört nicht ins Repo
+.venv/
+# falls das venv einmal ohne Punkt angelegt wird
+venv/
+# weiterer üblicher Name für ein venv
+env/
+
+# --- Python-Cache und Test-Ausgaben ---
+# kompilierte .pyc-Dateien, entstehen beim Ausführen automatisch neu
+__pycache__/
+# einzelne kompilierte Python-Dateien
+*.py[cod]
+# Zwischenspeicher von pytest
+.pytest_cache/
+# Ergebnis der Testabdeckung (coverage.py)
+.coverage
+# HTML-Bericht der Testabdeckung
+htmlcov/
+
+# --- macOS ---
+# Finder-Ordnereinstellungen, ohne Nutzen für das Projekt
+.DS_Store
+# Metadaten-Dateien auf externen Laufwerken (z. B. "Cini Mini")
+._*
+
+# --- Editoren und IDEs ---
+# persönliche VS-Code-Einstellungen
+.vscode/
+# persönliche Einstellungen von PyCharm/WebStorm
+.idea/
+# temporäre Dateien von Vim
+*.swp
+
+# --- Persönliche KI-Einstellungen ---
+# lokale Berechtigungen von Claude Code, nur für diesen Rechner
+.claude/settings.local.json
+
+# --- Geheimnisse ---
+# .env und .env.* werden schon von der Node-Vorlage unten ignoriert (Passwörter, API-Keys)
+
+# ============================================================
+# Ursprüngliche Node-Vorlage – [Arun] Initial commit
+# ============================================================
 # Logs
 logs
 *.log
