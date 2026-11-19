@@ -6,6 +6,7 @@
 /** Alle Karten, die schon auf dem Spielfeld liegen (auch überdeckte). */
 export let laidCards = [];
 
+// Liefert „tenStack“, das gefundene offene/Handkarten-Array oder undefined ohne Treffer.
 function getOldLocation(card, tenStack, openCards, handCards) { // Bestimmt den Herkunftsstapel; nur "tenStack" ist ein String, sonst wird das Array zurückgegeben.
     if (tenStack.some(entry => `image${entry.id}` === card.id)) {
         return "tenStack"
@@ -21,6 +22,7 @@ function getOldLocation(card, tenStack, openCards, handCards) { // Bestimmt den 
  * Zehnerstapel-Karte auf offenen Platz → openCards, sonst → laidCards.
  * @param {HTMLImageElement} card  Kartenbild mit ID "image<kartenId>"; newLocation = Ziel-Element
  */
+// Ordnet die gelegte Karte je nach Ziel den offenen oder den ausgespielten Karten zu.
 export function deleteFromStack(card, openCards, tenStack, handCards, newLocation) { // newLocation wird gebraucht, um Nachfüllen (offener Platz) vom Ablegen aufs Spielfeld zu unterscheiden.
     for (const stack of [openCards, tenStack, handCards]) {
         const index = stack.findIndex(entry => `image${entry.id}` === card.id);
@@ -47,6 +49,7 @@ export function deleteFromStack(card, openCards, tenStack, handCards, newLocatio
  * @param {HTMLImageElement} card         zu verschiebende Karte
  * @param {HTMLElement}      newLocation  Ziel-Element (Spielfeld oder offene Karte)
  */
+// Verschiebt Kartenbild und Listeneintrag und gibt die nächste Zehnerstapel-Karte frei.
 export function moveCardsToPlayArea(card, newLocation, openCards, tenStack, handCards) { // Stellt auf Aruns Wunsch die ursprüngliche Funktion ohne updateStacks wieder her.
     const clickedCard = card;
     if (!clickedCard || !newLocation) return;
@@ -67,6 +70,7 @@ export function moveCardsToPlayArea(card, newLocation, openCards, tenStack, hand
  * Setzt den Rahmen der zuvor ausgewählten Karte auf schwarz zurück.
  * @param {HTMLImageElement|null} lastCard  null, wenn noch keine Karte ausgewählt war
  */
+// Entfernt die Auswahlmarkierung der vorherigen Karte; null bleibt ohne Wirkung.
 export function clickCardStyle(lastCard) {
     if (lastCard === null) {
         return

@@ -4,7 +4,7 @@
 
 Diese Datei beschreibt den **aktuellen Aufbau** des Projekts: welche Dateien es gibt, was die Funktionen machen und wie sie zusammenspielen. Sie wird nur angepasst, wenn sich am Aufbau etwas ändert (siehe Abschnitt 12). Einzelne Änderungen und Bugfixes stehen im Änderungsprotokoll von `Dokumentation.md` und in der Git-Historie.
 
-Stand: 17.11.2026
+Stand: 19.11.2026
 
 ---
 
@@ -64,11 +64,12 @@ Ligretto/
 │   ├── Technische-Doku.md     diese Datei
 │   └── Bugs.md                offene Bugs
 ├── backend/
-│   ├── cards.py               alle 160 Karten als Python-Liste
+│   ├── cards.py               alle 160 Karten als Python-Liste, Daten für die Punktezählung
 │   ├── connection/            für den späteren Server (noch leer)
 │   └── logic/
 │       ├── shuffle.py         Karten eines Spielers mischen und verteilen
-│       └── rules.py           Spielregeln
+│       ├── rules.py           Spielregeln
+│       └── winner.py          Punkte zählen und Gewinner bestimmen
 └── frontend/
     ├── index.html             Startseite (Room beitreten / erstellen)
     ├── login.js               Logik der Startseite
@@ -137,7 +138,7 @@ Es gibt 4 Besitzer × 4 Farben × 10 Werte = **160 Karten**. Die Liste steht zwe
 | Handkarten-Container | ID `handCardsDiv` + Farbe, Klasse `handCardsElement` | |
 | Spielfeld-Feld | ID `playAreaField0` bis `playAreaField15`, Klasse `playAreaField` | |
 
-Das Präfix `image` ist wichtig: Die Regel-Funktionen (`getNumber`, `getColor`) schneiden die ersten 5 Zeichen ab, um die Karten-ID zu erhalten. Das gilt im Frontend **und** im Backend.
+Das Präfix `image` ist wichtig: Die Regel-Funktionen im Frontend (`getNumber`, `getColor`) schneiden die ersten 5 Zeichen ab, um die Karten-ID zu erhalten. Das Backend arbeitet dagegen mit Karten-IDs **ohne** Präfix (siehe 9.3).
 
 ### 5.3 Stapel-Arrays im Frontend
 
@@ -232,7 +233,9 @@ Umgesetzt in `frontend/rules.js` und gleich in `backend/logic/rules.py`:
 1. Auf ein **leeres Feld** darf nur eine **1** gelegt werden.
 2. Auf eine **Karte** darf nur eine Karte mit **gleicher Farbe** und einem **genau um 1 höheren Wert** gelegt werden (z. B. Grün 4 auf Grün 3).
 
-Noch nicht umgesetzt: Handkarten aufdecken und spielen, Spielende („Ligretto!“ bei leerem Zehnerstapel), Punktezählung.
+Punktezählung (nur im Backend, `backend/logic/winner.py`): Jede gelegte Karte gibt ihrem Besitzer 1 Punkt, jede Karte, die noch im Zehnerstapel liegt, 2 Punkte Abzug. Gewonnen hat die Farbe mit den meisten Punkten, bei Gleichstand mehrere.
+
+Noch nicht umgesetzt: Handkarten aufdecken und spielen, Spielende („Ligretto!“ bei leerem Zehnerstapel).
 
 ---
 
@@ -243,6 +246,14 @@ Die Module sind reine Funktionen ohne Server. Sie bekommen die Kartenliste als P
 ### 9.1 `backend/cards.py`
 
 Enthält die Liste `CARDS` mit allen 160 Karten, gleicher Aufbau wie im Frontend (Abschnitt 5.1).
+
+Dazu kommen die Daten für die Punktezählung, alle anfangs leer:
+
+| Variable | Typ | Inhalt |
+|---|---|---|
+| `laidCards` | Liste | alle gelegten Karten (Karten-Dictionaries) |
+| `playerColors` | Liste | Farben der teilnehmenden Spieler |
+| `tenStack` | Dictionary | Farbe → Anzahl Karten, die noch im Zehnerstapel liegen, z. B. `{"yellow": 8}` |
 
 ### 9.2 `backend/logic/shuffle.py`
 
@@ -258,14 +269,22 @@ Enthält die Liste `CARDS` mit allen 160 Karten, gleicher Aufbau wie im Frontend
 
 | Funktion | Beschreibung |
 |---|---|
-| `getId(card)` | entfernt das Präfix `image` (5 Zeichen) |
+| `getId(card)` | gibt die Karten-ID unverändert zurück |
 | `getNumber(card, CARDS)` | Wert der Karte, `0` bei unbekannter Karte |
 | `getColor(card, CARDS)` | Farbe der Karte, `""` bei unbekannter Karte |
 | `isAllowed(targetCard, currentCard, CARDS)` | gleiche Regeln wie im Frontend, `targetCard` darf `None` sein |
 
-Die Funktionen erwarten Karten-IDs **mit** Präfix `image`, also die DOM-IDs aus dem Frontend.
+Die Funktionen erwarten Karten-IDs **ohne** Präfix `image`, also wie in `cards.py` (z. B. `"blue-blue-1"`). Schickt das Frontend später seine DOM-IDs, muss das Präfix vorher entfernt werden.
 
-### 9.4 `backend/connection/`
+### 9.4 `backend/logic/winner.py`
+
+| Funktion | Beschreibung |
+|---|---|
+| `countCards(laidCards, playerColors, tenStack)` | zählt pro Farbe aus `playerColors` die Karten in `laidCards` mit diesem Besitzer (`owner`) und zieht pro Karte im Zehnerstapel 2 ab. Gibt ein Dictionary „Farbe → Punkte“ zurück, dazu den Schlüssel `"winner"` mit der Liste der Farben mit den meisten Punkten |
+
+`tenStack` muss für jede Farbe aus `playerColors` einen Eintrag haben, auch mit `0`. Fehlt einer, kommt `ValueError("Ten stack missing for <Farbe>")`. Ist `playerColors` leer, kommt `ValueError("No player colors")`. Zusätzliche Farben in `tenStack` werden ignoriert.
+
+### 9.5 `backend/connection/`
 
 Noch leer. Hier soll der Server entstehen, der Räume verwaltet und Frontend und Backend verbindet.
 

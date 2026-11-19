@@ -182,6 +182,7 @@ export const CARDS = [
  * Liefert die 40 Karten eines Spielers.
  * @param {string} owner  Spielerfarbe ("blue", "green", "pink", "yellow")
  */
+// Liefert die Karten des Besitzers; bei ungültiger Farbe Weiterleitung und false.
 export function getDeck(owner) {
     if (!["blue", "green", "pink", "yellow"].includes(owner)) {
         alert("Etwas ist Schief gelaufen")
@@ -198,6 +199,7 @@ export function getDeck(owner) {
  * @param {string} owner  Spielerfarbe
  * @returns {{openCards: object[], tenStack: object[], handCards: object[]}}
  */
+// Gibt offene Karten, Zehnerstapel und Handkarten zurück; bei ungültiger Farbe false.
 export function createStartStack(owner) {
     let cards = getDeck(owner);
     if (cards === false) {
@@ -242,6 +244,7 @@ export function createStartStack(owner) {
  * und den verdeckten Handstapel (Rückseite in der Spielerfarbe).
  * Die Spielerfarbe kommt aus sessionStorage.
  */
+// Baut die Kartenanzeige des eigenen Spielers aus den übergebenen Startstapeln auf.
 export function createDOMStack(openCards, tenStack, handCards) {
     const openCardsBottom = document.querySelector("#openCardsBottom");
     const tenStackBottom = document.querySelector("#tenStackBottom");
@@ -364,6 +367,7 @@ export function createDOMStack(openCards, tenStack, handCards) {
  * Erzeugt im Spielfeld (#playArea) ein 4 × 4-Raster aus 16 leeren Ablagefeldern
  * mit der Klasse "playAreaField" (daran erkennt main.js ein gültiges Ziel).
  */
+// Erzeugt die 16 gemeinsamen Ablagefelder für Karten.
 export function createPlayArea() {
     const playArea = document.querySelector("#playArea");
     playArea.style.display = "grid";

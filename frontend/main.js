@@ -7,6 +7,7 @@ import * as createStack from "./create-stack.js";
 import * as moveCards from "./move-cards.js";
 import * as rules from "./rules.js"; // Stellt die vorhandenen Prüfungen für Farbe und Kartenwert wieder bereit.
 
+// Prüft die Spielerfarbe, baut das Spiel auf und verbindet die Klickaktionen.
 document.addEventListener("DOMContentLoaded", () => {
     const owner = sessionStorage.getItem("playerColor");
     if (!["blue", "green", "pink", "yellow"].includes(owner)) {
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
      *   und im Daten-Array vom Zehnerstapel zu openCards verschoben; belegte Plätze werden ignoriert.
      * - Sonst wird die angeklickte offene Karte ausgewählt (grüner Rahmen).
      */
+    // Wählt offene Karten aus oder füllt einen leeren Platz aus dem Zehnerstapel nach.
     openCardsBottom.addEventListener("click", (event) => {
         const clickedCard = event.target;
         const isTenStackCard = activeField?.classList.contains("tenStackImage")
@@ -86,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * Klick auf den Zehnerstapel: wählt die oberste Karte aus.
      * Nur sie ist klickbar (pointerEvents wird in create-stack.js gesetzt).
      */
+    // Markiert die angeklickte Zehnerstapel-Karte als aktuelle Auswahl.
     tenStackBottom.addEventListener("click", (event) => {
         const clickedCard = event.target;
         if (!(clickedCard instanceof HTMLImageElement)) return;
@@ -100,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * - Auf Karten nur gleiche Farbe und Wert +1; auf leere Felder nur eine 1.
      * - Eine liegende Zielkarte wird aus dem DOM entfernt, bleibt aber in laidCards.
      */
+    // Legt die Auswahl bei gültigem Zug ab und setzt sie erst danach zurück.
     playArea.addEventListener("click", (event) => {
         const newLocation = event.target;
         if (newLocation.className !== "playAreaField" && !(newLocation instanceof HTMLImageElement)) return;

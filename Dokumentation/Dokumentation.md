@@ -459,6 +459,34 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Neue Datei `Dokumentation/Technische-Doku.md` mit dem aktuellen Stand: Überblick, Starten, Projektstruktur, Ablauf (mit Diagramm), Datenmodell und DOM-IDs, alle Frontend- und Backend-Funktionen, Interaktion beim Auswählen und Legen, Spielregeln, Layout, bekannte Einschränkungen, Pflege der Datei. Geschrieben aus dem aktuellen Code, nicht aus dem Protokoll.
 - **[KI]** `AGENTS.md` um Regel 8 „Technische Dokumentation“ ergänzt: Beim Dokumentieren wird nach dem Bug Check geprüft, ob sich der Aufbau geändert hat (Dateien, Funktionen, Parameter, Ablauf, Datenmodell, Regeln). Nur dann wird die technische Doku angepasst, ohne Zeilennummern und ohne [KI]/[Arun] pro Abschnitt.
 
+### 3.38 Bestehenden Code nach Regel 6 kommentiert – [KI], 19.11.2026
+
+- **[KI]** Datei-Docstrings in allen vier Python-Dateien sowie fehlende Funktions-Docstrings in `rules.py` und `winner.py` ergänzt. Sonderfälle bei unbekannten Spielerfarben und die Zählung nach Vorderseitenfarbe erklärt.
+- **[KI]** Kurze `//`-Kommentare vor JavaScript-Funktionen und bislang nicht entsprechend beschriebenen Ereignisbehandlungen ergänzt. Vorhandene Kommentare beibehalten, da Regel 6 ausschliesslich Ergänzungen erlaubt.
+- **[KI]** Dateiübersichten in den drei HTML-Dateien ergänzt; `rules.html` bleibt ein Platzhalter ohne sichtbaren Inhalt. Die Formular-Rasterregel in `login.css` erklärt.
+- **[KI]** Per Vergleich geprüft: Alle bisherigen Codezeilen, Leerzeilen und ihre Reihenfolge bleiben unverändert; hinzugekommen sind nur Kommentare und Docstrings. Python-Syntaxbäume ohne Docstrings stimmen vor und nach der Bearbeitung überein. `git diff --check` ohne Befund. Keine Änderung am Aufbau, daher keine Anpassung der technischen Dokumentation.
+
+### 3.39 Punktezählung, Karten-IDs ohne Präfix und Regel 6 in `AGENTS.md` – [Arun]/[KI], 19.11.2026
+
+- **[Arun]** Neue Datei `backend/logic/winner.py` mit `countCards(laidCards, playerColors, tenStack)`:
+  - Zählt pro Spielerfarbe die gelegten Karten in `laidCards`. Gezählt wird nach Besitzer (`owner`), nicht nach Vorderseitenfarbe.
+  - Zieht pro Karte, die noch im Zehnerstapel liegt, 2 Punkte ab. `tenStack` ist ein Dictionary „Farbe → Anzahl Karten im Zehnerstapel“.
+  - Gibt ein Dictionary mit den Punkten pro Farbe zurück, dazu den Schlüssel `"winner"` mit einer Liste der Farben mit den meisten Punkten (bei Gleichstand mehrere).
+- **[Arun]** `backend/cards.py`: Neue Variablen `laidCards` (Liste), `playerColors` (Liste) und `tenStack` (Dictionary) als Daten für die Punktezählung.
+- **[Arun]** `backend/logic/rules.py`: `getId()` schneidet das Präfix `image` nicht mehr ab und gibt die Karten-ID unverändert zurück. Das Backend arbeitet damit mit IDs wie in `cards.py` (`"blue-blue-1"`). Damit ist BUG-014 erledigt.
+- **[KI]** `AGENTS.md` Regel 6 neu gefasst: Kommentieren von bestehendem Code nur auf Aufforderung und klar getrennt von Regel 2. Kein Kommentar pro Zeile, sondern wie in einer Firma: kurzer Kommentar am Dateianfang, vor jeder Klasse und vor jeder Funktion, in Python als Docstring. Am Code wird nichts geändert. Mit Beispielen in JavaScript und Python.
+- **[KI]** Bug-Check nach Regel 7: BUG-014 ist gefixt und aus `Bugs.md` entfernt. Neu: BUG-015 (`KeyError` in `countCards()`, wenn eine Farbe in `tenStack` fehlt) und BUG-016 (`ValueError` ohne Spielerfarben). Mit der echten Kartenliste geprüft: `isAllowed(None, "blue-blue-1")` → `True`, Blau 1 → Blau 2 → `True`, andere Farbe → `False`. `countCards()` mit 5 blauen und 3 pinken Karten und `{"blue": 1, "pink": 0}` → 3 : 3, beide Gewinner.
+- **[KI]** Hinweis: Der Docstring von `getId()` sagt noch, dass das Präfix `image` entfernt wird, und der Docstring von `countCards()` erwähnt den Abzug für den Zehnerstapel und den Schlüssel `"winner"` nicht. Beides beschreibt nicht mehr den aktuellen Code.
+- **[KI]** Technische Doku nachgeführt (Projektstruktur, Karten-IDs, Spielregeln, Backend-Module).
+
+### 3.40 Eingaben von `countCards()` prüfen, BUG-015 und BUG-016 behoben – [Arun]/[KI], 19.11.2026
+
+- **[Arun]** `backend/logic/winner.py`: `countCards()` prüft vor dem Zählen zwei Dinge:
+  - Ist `playerColors` leer, kommt `ValueError("No player colors")`. Behebt BUG-016.
+  - Fehlt eine Farbe aus `playerColors` in `tenStack`, kommt `ValueError("Ten stack missing for <Farbe>")`. Behebt BUG-015. Zusätzliche Farben in `tenStack` stören nicht, weil nur die Farben aus `playerColors` gelesen werden.
+- **[KI]** Erklärt: `raise` beendet die Funktion sofort, ein `return` danach braucht es nicht. Das `return` nach `raise` in `getDivideStack()` (`shuffle.py`) wird deshalb nie erreicht. Es ist harmlos, aber überflüssig.
+- **[KI]** Bug-Check nach Regel 7: BUG-015 und BUG-016 sind gefixt und aus `Bugs.md` entfernt, keine neuen Bugs. Geprüft: `{}` → `ValueError` „Ten stack missing for blue“, `{"blue": 2}` → „… for pink“, `countCards([], [], {})` → „No player colors“, eine zusätzliche Farbe in `tenStack` wird ignoriert. Die normale Zählung ist unverändert (3 : 3, beide Gewinner bzw. 5 : 1, Blau gewinnt).
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -517,6 +545,10 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 19.11.2026 | [Arun] | `countCards()` prüft leere `playerColors` und fehlende Farben in `tenStack`, BUG-015 und BUG-016 behoben (siehe 3.40). |
+| 19.11.2026 | [Arun] | `backend/logic/winner.py` mit `countCards()` für Punkte und Gewinner, neue Variablen in `cards.py`, `getId()` in `rules.py` arbeitet ohne Präfix `image` (siehe 3.39). |
+| 19.11.2026 | [KI] | `AGENTS.md` Regel 6 „Bestehenden Code kommentieren“ neu gefasst, Bug-Check mit BUG-015 und BUG-016, technische Doku nachgeführt (siehe 3.39). |
+| 19.11.2026 | [KI] | Bestehenden Code nach Regel 6 um Dateiübersichten, Python-Docstrings und JavaScript-Funktionskommentare ergänzt; Code und Formatierung unverändert (siehe 3.38). |
 | 17.11.2026 | [KI] | Auf Wunsch von Arun: `Dokumentation/Technische-Doku.md` erstellt, Regel 8 „Technische Dokumentation“ in `AGENTS.md` ergänzt (siehe 3.37). |
 | 17.11.2026 | [KI] | Auf Wunsch von Arun: venv `.venv/` erstellt, `.gitignore` um Python, venv, macOS, Editoren und lokale Claude-Einstellungen ergänzt, getrackte `.DS_Store`-Dateien aus dem Repo entfernt, `pytest` ins venv installiert (siehe 3.36). |
 | 17.11.2026 | [Arun] | `backend/logic/rules.py`: `getId()`, `getNumber()`, `getColor()` und `isAllowed()` als Python-Version der Spielregeln (siehe 3.35). |

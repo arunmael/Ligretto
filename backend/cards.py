@@ -1,3 +1,4 @@
+"""Kartendaten mit Besitzer, Vorderseitenfarbe und Bildpfaden sowie Listen für gelegte Karten und Spielerfarben."""
 # [KI] Aus frontend/create-stack.js übernommen: jede Karte ist ein Dictionary.
 CARDS = [  # Sammelt alle 160 Karten als Liste für die Verwendung im Backend.
     {"id": "blue-blue-1", "owner": "blue", "color": "blue", "value": 1, "alt": "Blau 1", "src": "images/blue/one.PNG", "back": "images/back/blue.PNG"},  # Bewahrt Eigenschaften und Bildpfade dieser eindeutig identifizierten Karte.
@@ -161,3 +162,17 @@ CARDS = [  # Sammelt alle 160 Karten als Liste für die Verwendung im Backend.
     {"id": "yellow-yellow-9", "owner": "yellow", "color": "yellow", "value": 9, "alt": "Gelb 9", "src": "images/yellow/nine.PNG", "back": "images/back/yellow.PNG"},  # Bewahrt Eigenschaften und Bildpfade dieser eindeutig identifizierten Karte.
     {"id": "yellow-yellow-10", "owner": "yellow", "color": "yellow", "value": 10, "alt": "Gelb 10", "src": "images/yellow/ten.PNG", "back": "images/back/yellow.PNG"},  # Bewahrt Eigenschaften und Bildpfade dieser eindeutig identifizierten Karte.
 ]  # Schliesst die vollständige Kartenliste ab.
+
+
+# Sammlung der bereits gelegten Karten.
+laidCards = []
+
+
+# Farben der teilnehmenden Spieler.
+playerColors = []
+
+
+tenStack = {
+    #Beispiel:
+    #"yellow": 8
+}

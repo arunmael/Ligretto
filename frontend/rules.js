@@ -9,6 +9,7 @@ import { CARDS } from "./create-stack.js";
  * @param {HTMLImageElement} card  Kartenbild mit ID "image<kartenId>"
  * @returns {number|undefined}     undefined, falls die Karte nicht in CARDS steht
  */
+// Liefert den Wert zum Kartenbild, bei unbekannter ID undefined.
 export function getNumber(card) {
     const cardId = card.id.slice(5); // Präfix "image" (5 Zeichen) entfernen
     let number;
@@ -25,6 +26,7 @@ export function getNumber(card) {
  * @param {HTMLImageElement} card  Kartenbild mit ID "image<kartenId>"
  * @returns {string|undefined}
  */
+// Liefert die Vorderseitenfarbe zum Kartenbild, bei unbekannter ID undefined.
 export function getColor(card) {
     const cardId = card.id.slice(5); // Präfix "image" entfernen
     let color;
@@ -43,6 +45,7 @@ export function getColor(card) {
  * @param {HTMLImageElement}      currentCard  Karte, die gelegt werden soll
  * @returns {boolean}
  */
+// Erlaubt auf leeren Feldern eine 1, sonst nur gleiche Farbe und den nächsten Wert.
 export function isAllowed(targetCard, currentCard) {
     if (targetCard === null && getNumber(currentCard) !== 1) {
         return false;

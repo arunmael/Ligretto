@@ -1,8 +1,11 @@
+"""Liest Kartenwerte und Farben aus der Kartenliste und prüft erlaubte Spielzüge."""
 def getId(card):
-    id = card[5:]
+    """Entfernt das fünfstellige Präfix „image“ aus einer Kartenbild-ID."""
+    id = card
     return id
 
 def getNumber(card, CARDS):
+    """Liefert den Wert zur Kartenbild-ID aus CARDS, bei fehlendem Treffer 0."""
     id = getId(card)
     number = 0
     for i in CARDS:
@@ -12,6 +15,7 @@ def getNumber(card, CARDS):
 
 
 def getColor(card, CARDS):
+    """Liefert die Vorderseitenfarbe zur Kartenbild-ID, bei fehlendem Treffer einen leeren String."""
     id = getId(card)
     color = ""
     for i in CARDS:
@@ -20,6 +24,7 @@ def getColor(card, CARDS):
     return color
 
 def isAllowed(targetCard, currentCard, CARDS):
+    """Prüft Kartenbild-IDs: auf None nur eine 1, sonst gleiche Farbe und Wert +1; gibt bool zurück."""
     currentNumber = getNumber(currentCard, CARDS)
     currentColor = getColor(currentCard, CARDS)
 

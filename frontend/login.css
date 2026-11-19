@@ -26,6 +26,7 @@ footer nav {
     grid-column: 3;
 }
 
+/* Formularfelder füllen die verfügbare Rasterbreite aus. */
 form {
     display: grid;
     justify-items: stretch;

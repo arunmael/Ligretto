@@ -38,11 +38,49 @@ Diese Regeln gelten für jeden KI-Agenten, der an diesem Projekt arbeitet.
 - Bei der Antwort wird so wenig von meinem Code wie möglich verändert, denn wenn ich frage was falsch ist und ich nur eine Zeile ändern müsste du mir aber eine komplet neue Funktion mit dem selben Ergebnis gibst bringt mir das nichts!
 
 
-## 6. Code komentieren
-- Wenn ich dich dazu auffordere den code im code zu kommentieren ist das erlaubt
-- Du darfst mich fragen wenn du etwas nicht verstehst
-- Du darfst den Code NICHT verändern
-- Du sollst kurz verständlich und knapp kommentieren, so dass wenn ich in einem halbe Jahr die Funktion anschaue ich mittels Kommentare die Funktion selbst schnell verstehe
+## 6. Bestehenden Code kommentieren (nur auf Aufforderung)
+
+Gilt nur, wenn ich dich ausdrücklich bitte, Code zu kommentieren. Das ist etwas anderes als Regel 2:
+* **Regel 2** gilt für Code, den du neu schreibst oder änderst. Dort wird jede Zeile kommentiert.
+* **Regel 6** gilt für Code, der schon da ist und nur verständlicher werden soll.
+
+### Grundregeln
+* Am Code selbst wird **nichts** geändert: keine Logik, keine Namen, keine Formatierung, keine Reihenfolge, keine Leerzeilen. Es kommen nur Kommentare dazu.
+* Es wird kommentiert wie in einer Firma, **nicht jede Zeile**:
+  * Am Anfang jeder Datei steht ein kurzer Kommentar, was die Datei enthält.
+  * Vor jeder Klasse und jeder Funktion steht ein kurzer Kommentar, der erklärt, was sie macht. Bei Funktionen, wenn es nicht offensichtlich ist, auch was rein- und was rausgeht.
+  * In Python wird dafür ein Docstring (`"""…"""`) verwendet: bei Dateien zuoberst in der Datei, bei Klassen und Funktionen direkt unter `class` bzw. `def`. In JavaScript ein `//`-Kommentar über der Funktion bzw. Klasse.
+  * In der Funktion nur dort ein Kommentar, wo etwas nicht selbsterklärend ist (z. B. eine Spielregel, ein Sonderfall).
+  * Kein Kommentar, der nur wiederholt, was im Code sowieso steht.
+* Kurz und knapp, damit ich die Funktion in einem halben Jahr schnell wieder verstehe.
+* Wenn du etwas nicht verstehst, fragst du nach statt zu raten.
+
+### Beispiel JavaScript
+```js
+// Prüft, ob eine Karte auf einen Stapel in der Mitte gelegt werden darf.
+// Gibt true zurück, wenn Farbe und Zahl passen.
+function canPlaceCard(card, pile) {
+  if (pile.length === 0) return card.value === 1; // ein leerer Stapel darf nur mit einer 1 beginnen
+  const top = pile[pile.length - 1];
+  return top.color === card.color && top.value === card.value - 1;
+}
+```
+
+### Beispiel Python
+```python
+"""Spielregeln: prüft, ob ein Spielzug erlaubt ist."""
+
+
+def can_place_card(card, pile):
+    """Prüft, ob eine Karte auf einen Stapel in der Mitte gelegt werden darf.
+
+    Gibt True zurück, wenn Farbe und Zahl passen.
+    """
+    if not pile:
+        return card.value == 1  # ein leerer Stapel darf nur mit einer 1 beginnen
+    top = pile[-1]
+    return top.color == card.color and top.value == card.value - 1
+```
 
 ## 7. Bug Check bei Doku und Commit Messages
 

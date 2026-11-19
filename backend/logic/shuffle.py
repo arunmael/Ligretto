@@ -1,3 +1,4 @@
+"""Filtert Spielerkarten, mischt sie und verteilt sie auf die drei Startstapel."""
 from random import shuffle
 
 
@@ -10,6 +11,7 @@ def getPlayerCards(CARDS, playerColor):
             playerCards.append(i)
         counter += 1
 
+    # Eine unbekannte Spielerfarbe wird mit False statt einer leeren Liste gemeldet.
     if len(playerCards) == 0:
         return False
 
@@ -20,6 +22,7 @@ def shuffleDeck (CARDS, playerColor):
     """Gibt die Karten des Spielers als neue, gemischte Liste zurück."""
     playerCards = getPlayerCards(CARDS, playerColor)
 
+    # Reicht die unbekannte Spielerfarbe an den Aufrufer weiter.
     if playerCards == False:
         return False
 
@@ -35,6 +38,7 @@ def getDivideStack(CARDS, playerColor):
     """
     shuffledCards = shuffleDeck(CARDS, playerColor)
 
+    # Ohne passende Spielerkarten ist keine Verteilung möglich.
     if shuffledCards == False:
         raise ValueError("Player color unknown")
         return
