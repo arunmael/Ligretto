@@ -1,7 +1,7 @@
 /**
  * login.js – Startseite (index.html).
- * Liest RoomID und Kartenfarbe aus dem Formular, speichert sie in sessionStorage
- * und leitet zur Spielseite weiter. Noch ohne Backend.
+ * Liest RoomID und Kartenfarbe aus dem Formular, speichert sie in sessionStorage,
+ * schickt sie ans Backend (/joinRoom bzw. /createRoom) und leitet zur Spielseite weiter.
  */
 
 /**
@@ -41,6 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const roomId = getSubmitValues().roomId;
         sessionStorage.setItem("playerColor", color);
         sessionStorage.setItem("roomId", roomId);
+        // Meldet den Beitritt beim Backend (routes.py, join_room); die Antwort wird noch nicht ausgewertet
+        fetch("http://localhost:8000/joinRoom", {
+            method: "Post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({color, roomId}),
+        });
         joinRoom();
     });
 
@@ -50,6 +56,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const roomId = getSubmitValues().roomId;
         sessionStorage.setItem("playerColor", color);
         sessionStorage.setItem("roomId", roomId);
+        // Lässt das Backend einen Raum anlegen (routes.py, create_room); das Backend erzeugt die RoomID selbst
+        fetch("http://localhost:8000/createRoom", {
+            method: "Post",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({color, roomId}),
+        });
         createRoom();
     });
 });

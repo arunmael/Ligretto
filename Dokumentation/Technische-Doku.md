@@ -4,7 +4,7 @@
 
 Diese Datei beschreibt den **aktuellen Aufbau** des Projekts: welche Dateien es gibt, was die Funktionen machen und wie sie zusammenspielen. Sie wird nur angepasst, wenn sich am Aufbau etwas ändert (siehe Abschnitt 12). Einzelne Änderungen und Bugfixes stehen im Änderungsprotokoll von `Dokumentation.md` und in der Git-Historie.
 
-Stand: 19.11.2026
+Stand: 20.11.2026
 
 ---
 
@@ -14,12 +14,12 @@ Ligretto ist ein Kartenspiel für mehrere Spieler, das im Browser laufen soll. J
 
 **Aktueller Stand:**
 - **Frontend:** Startseite und Spielseite für **einen** Spieler. Karten werden verteilt, angezeigt und nach den Regeln aufs Spielfeld gelegt.
-- **Backend:** Python-Module für Kartenliste, Kartenverteilung und Spielregeln. Es gibt noch **keinen Server**, und Frontend und Backend sind noch nicht verbunden.
+- **Backend:** Python-Module für Kartenliste, Kartenverteilung, Spielregeln und Punktezählung. Dazu ein erster FastAPI-Server mit den Routen `/joinRoom` und `/createRoom`, der Räume im Arbeitsspeicher verwaltet. Das Frontend schickt beim Beitreten und Erstellen eine Anfrage, wertet die Antwort aber noch nicht aus.
 
 | Bereich | Technik |
 |---|---|
 | Frontend | HTML, CSS, JavaScript (ES-Module, ohne Framework) |
-| Backend | Python 3.14 |
+| Backend | Python 3.14, FastAPI (Server), Pydantic (Anfrage-Modelle), uvicorn (startet den Server) |
 | Tests | pytest (geplant, im venv installiert) |
 
 ---
@@ -40,8 +40,16 @@ Danach im Browser `http://localhost:8000` öffnen.
 ```bash
 python3 -m venv .venv          # nur einmal, falls .venv fehlt
 source .venv/bin/activate      # bei jeder neuen Terminal-Sitzung
-pip install pytest
+pip install -r requirements.txt
 ```
+
+**Backend-Server**, im Projektordner (nicht in `backend/`) mit aktivem venv, damit die Imports mit `backend.` funktionieren:
+
+```bash
+uvicorn backend.connection.routes:app
+```
+
+`uvicorn` nimmt standardmässig Port 8000, also denselben wie das Frontend oben. Siehe BUG-017 in [Bugs.md](Bugs.md).
 
 **Tests** (sobald vorhanden), im Projektordner mit aktivem venv:
 
@@ -64,12 +72,17 @@ Ligretto/
 │   ├── Technische-Doku.md     diese Datei
 │   └── Bugs.md                offene Bugs
 ├── backend/
-│   ├── cards.py               alle 160 Karten als Python-Liste, Daten für die Punktezählung
-│   ├── connection/            für den späteren Server (noch leer)
-│   └── logic/
-│       ├── shuffle.py         Karten eines Spielers mischen und verteilen
-│       ├── rules.py           Spielregeln
-│       └── winner.py          Punkte zählen und Gewinner bestimmen
+│   ├── memory.py              alle 160 Karten, erlaubte Farben und offene Räume (im Arbeitsspeicher)
+│   ├── connection/
+│   │   ├── model.py           Pydantic-Modelle für den JSON-Body der Anfragen
+│   │   └── routes.py          FastAPI-App mit /joinRoom und /createRoom
+│   ├── logic/
+│   │   ├── createRoomId.py    zufällige 6-stellige RoomID
+│   │   ├── shuffle.py         Karten eines Spielers mischen und verteilen
+│   │   ├── rules.py           Spielregeln
+│   │   └── winner.py          Punkte zählen und Gewinner bestimmen
+│   └── test/
+│       └── connection.py      für Tests der Routen (noch leer)
 └── frontend/
     ├── index.html             Startseite (Room beitreten / erstellen)
     ├── login.js               Logik der Startseite
@@ -91,7 +104,7 @@ Ligretto/
 
 ```mermaid
 flowchart TD
-    A[index.html] -->|Formular absenden oder<br>'Room erstellen'| B[login.js<br>speichert playerColor und roomId<br>in sessionStorage]
+    A[index.html] -->|Formular absenden oder<br>'Room erstellen'| B[login.js<br>speichert playerColor und roomId<br>in sessionStorage,<br>schickt fetch an Backend]
     B --> C[game.html lädt main.js]
     C --> D{playerColor gültig?}
     D -->|nein| A
@@ -101,7 +114,7 @@ flowchart TD
     G --> H[Klick-Handler warten auf Eingaben]
 ```
 
-1. **Startseite:** Der Spieler gibt eine RoomID ein und wählt eine Kartenfarbe. `login.js` speichert beides in `sessionStorage` und leitet zu `game.html` weiter. Ein Server wird dabei noch nicht kontaktiert.
+1. **Startseite:** Der Spieler gibt eine RoomID ein und wählt eine Kartenfarbe. `login.js` speichert beides in `sessionStorage`, schickt eine Anfrage an `/joinRoom` bzw. `/createRoom` (Abschnitt 9.6) und leitet sofort zu `game.html` weiter, ohne auf die Antwort zu warten.
 2. **Spielseite:** `main.js` liest `playerColor` aus `sessionStorage`. Ist die Farbe ungültig, erscheint eine Meldung und der Spieler kommt zurück zur Startseite.
 3. **Aufbau:** Die Karten werden verteilt, das Spielfeld und die eigenen Stapel werden im DOM erzeugt.
 4. **Spielen:** Karte anklicken (grüner Rahmen) und dann ein Ziel anklicken (siehe Abschnitt 7).
@@ -124,7 +137,7 @@ Jede Karte ist ein Objekt (JavaScript) bzw. ein Dictionary (Python) mit denselbe
 | `src` | `"images/green/five.PNG"` | Bild der Vorderseite |
 | `back` | `"images/back/yellow.PNG"` | Bild der Rückseite |
 
-Es gibt 4 Besitzer × 4 Farben × 10 Werte = **160 Karten**. Die Liste steht zweimal im Projekt: als `CARDS` in `frontend/create-stack.js` und in `backend/cards.py`.
+Es gibt 4 Besitzer × 4 Farben × 10 Werte = **160 Karten**. Die Liste steht zweimal im Projekt: als `CARDS` in `frontend/create-stack.js` und in `backend/memory.py`.
 
 ### 5.2 IDs im DOM
 
@@ -160,10 +173,10 @@ Wenn eine Karte gelegt wird, verschwindet sie aus ihrem Stapel-Array und kommt i
 | Funktion | Beschreibung |
 |---|---|
 | `getSubmitValues()` | liest RoomID und Farbe aus dem Formular, gibt `{ color, roomId }` zurück |
-| `createRoom()` | leitet zu `game.html` weiter (noch ohne Server) |
-| `joinRoom()` | leitet zu `game.html` weiter (noch ohne Server) |
+| `createRoom()` | leitet zu `game.html` weiter |
+| `joinRoom()` | leitet zu `game.html` weiter |
 
-Beide Buttons speichern `playerColor` und `roomId` in `sessionStorage`, bevor sie weiterleiten.
+Beide Buttons speichern `playerColor` und `roomId` in `sessionStorage` und schicken `{ color, roomId }` als JSON per `POST` ans Backend: „Beitreten“ an `http://localhost:8000/joinRoom`, „Erstelle einen neuen Room“ an `http://localhost:8000/createRoom`. Danach rufen sie `joinRoom()` bzw. `createRoom()` auf. Die Antwort des Backends wird noch nicht ausgewertet.
 
 ### 6.2 `create-stack.js` (Daten und Aufbau)
 
@@ -241,19 +254,27 @@ Noch nicht umgesetzt: Handkarten aufdecken und spielen, Spielende („Ligretto!�
 
 ## 9. Backend-Module
 
-Die Module sind reine Funktionen ohne Server. Sie bekommen die Kartenliste als Parameter `CARDS` und importieren sie nicht selbst. Dadurch lassen sie sich mit einer eigenen, kleinen Kartenliste testen.
+Die Module in `logic/` sind reine Funktionen ohne Server. Sie bekommen die Kartenliste als Parameter `CARDS` und importieren sie nicht selbst. Dadurch lassen sie sich mit einer eigenen, kleinen Kartenliste testen.
 
-### 9.1 `backend/cards.py`
+### 9.1 `backend/memory.py`
 
-Enthält die Liste `CARDS` mit allen 160 Karten, gleicher Aufbau wie im Frontend (Abschnitt 5.1).
-
-Dazu kommen die Daten für die Punktezählung, alle anfangs leer:
+Zentraler Speicher des Backends, nur im Arbeitsspeicher. Beim Neustart des Servers sind alle Räume weg.
 
 | Variable | Typ | Inhalt |
 |---|---|---|
-| `laidCards` | Liste | alle gelegten Karten (Karten-Dictionaries) |
-| `playerColors` | Liste | Farben der teilnehmenden Spieler |
-| `tenStack` | Dictionary | Farbe → Anzahl Karten, die noch im Zehnerstapel liegen, z. B. `{"yellow": 8}` |
+| `CARDS` | Liste | alle 160 Karten, gleicher Aufbau wie im Frontend (Abschnitt 5.1) |
+| `acceptedColors` | Liste | erlaubte Spielerfarben: `"pink"`, `"yellow"`, `"green"`, `"blue"` (gleich wie die `<option>`-Werte in `index.html`) |
+| `rooms` | Dictionary | RoomID (String) → Daten eines Raums, anfangs leer |
+
+Jeder Raum in `rooms` hat diesen Aufbau:
+
+| Schlüssel | Typ | Inhalt |
+|---|---|---|
+| `playerColors` | Liste | Farben der Spieler in diesem Raum, jede Farbe nur einmal |
+| `laidCards` | Liste | alle in der Mitte gelegten Karten (Karten-Dictionaries) |
+| `tenStack` | Dictionary | Farbe → Anzahl Karten im Ligretto-Stapel, startet bei `10`, z. B. `{"blue": 8, "pink": 10}` |
+
+Damit passen `playerColors`, `laidCards` und `tenStack` eines Raums direkt als Parameter zu `countCards()` (Abschnitt 9.4).
 
 ### 9.2 `backend/logic/shuffle.py`
 
@@ -274,7 +295,7 @@ Dazu kommen die Daten für die Punktezählung, alle anfangs leer:
 | `getColor(card, CARDS)` | Farbe der Karte, `""` bei unbekannter Karte |
 | `isAllowed(targetCard, currentCard, CARDS)` | gleiche Regeln wie im Frontend, `targetCard` darf `None` sein |
 
-Die Funktionen erwarten Karten-IDs **ohne** Präfix `image`, also wie in `cards.py` (z. B. `"blue-blue-1"`). Schickt das Frontend später seine DOM-IDs, muss das Präfix vorher entfernt werden.
+Die Funktionen erwarten Karten-IDs **ohne** Präfix `image`, also wie in `memory.py` (z. B. `"blue-blue-1"`). Schickt das Frontend später seine DOM-IDs, muss das Präfix vorher entfernt werden.
 
 ### 9.4 `backend/logic/winner.py`
 
@@ -284,9 +305,33 @@ Die Funktionen erwarten Karten-IDs **ohne** Präfix `image`, also wie in `cards.
 
 `tenStack` muss für jede Farbe aus `playerColors` einen Eintrag haben, auch mit `0`. Fehlt einer, kommt `ValueError("Ten stack missing for <Farbe>")`. Ist `playerColors` leer, kommt `ValueError("No player colors")`. Zusätzliche Farben in `tenStack` werden ignoriert.
 
-### 9.5 `backend/connection/`
+### 9.5 `backend/logic/createRoomId.py`
 
-Noch leer. Hier soll der Server entstehen, der Räume verwaltet und Frontend und Backend verbindet.
+| Funktion | Beschreibung |
+|---|---|
+| `createRoomID()` | gibt eine zufällige RoomID aus 6 Ziffern als String zurück (mit `secrets`). Prüft nicht, ob sie schon vergeben ist |
+
+### 9.6 `backend/connection/` (Server)
+
+Start: `uvicorn backend.connection.routes:app` im Projektordner (Abschnitt 2).
+
+**`model.py`** – Pydantic-Modelle für den JSON-Body. Fehlt ein Feld oder hat es den falschen Typ, antwortet FastAPI automatisch mit `422`.
+
+| Klasse | Felder |
+|---|---|
+| `roomRequestBase` | `color: str` |
+| `joinRoomRequest` | erbt von `roomRequestBase`, dazu `roomId: str` |
+
+**`routes.py`** – FastAPI-App `app`:
+
+| Route | Funktion | Body | Erfolg | Fehler |
+|---|---|---|---|---|
+| `POST /joinRoom` | `join_room(data)` | `joinRoomRequest` | `200` `{ roomId, color }`, Farbe wird in `playerColors` eingetragen, `tenStack[color] = 10` | `400` leere Eingabe oder Farbe nicht in `acceptedColors`, `404` Raum nicht gefunden, `409` Farbe im Raum schon vergeben |
+| `POST /createRoom` | `create_room(data)` | `roomRequestBase` | `200` `{ roomId, color }` mit neuer RoomID, Raum wird in `rooms` angelegt | `400` leere Farbe oder Farbe nicht in `acceptedColors` |
+
+`create_room()` erzeugt die RoomID selbst mit `createRoomID()` und würfelt neu, solange sie schon in `rooms` vorkommt. Eine mitgeschickte `roomId` wird ignoriert.
+
+**`backend/test/connection.py`** – für Tests der Routen vorgesehen, noch leer.
 
 ---
 
@@ -302,7 +347,9 @@ Noch leer. Hier soll der Server entstehen, der Räume verwaltet und Frontend und
 
 ## 11. Bekannte Einschränkungen
 
-- Es gibt keinen Server und kein Multiplayer. RoomID und Farbe bleiben im Browser (`sessionStorage`).
+- Der Server verwaltet nur Räume. Spielzüge, Karten und Positionen werden noch nicht übertragen, es gibt noch kein echtes Multiplayer.
+- Das Frontend wertet die Antwort des Servers nicht aus. Die Spielseite arbeitet weiter nur mit `sessionStorage`.
+- Räume liegen nur im Arbeitsspeicher (`memory.rooms`) und werden nie gelöscht.
 - Nur der eigene Spieler (unten) wird angezeigt. Die Bereiche oben, links und rechts sind leer.
 - Die Handkarten sind noch nicht klickbar, und `handCards…Open` wird noch nicht benutzt.
 - `rules.html` ist leer.

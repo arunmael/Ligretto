@@ -1,4 +1,7 @@
-"""Kartendaten mit Besitzer, Vorderseitenfarbe und Bildpfaden sowie Listen für gelegte Karten und Spielerfarben."""
+"""Zentraler Speicher des Backends im Arbeitsspeicher: alle Karten, erlaubte Farben und die offenen Räume.
+
+Geht beim Neustart des Servers verloren (noch keine Datenbank).
+"""
 # [KI] Aus frontend/create-stack.js übernommen: jede Karte ist ein Dictionary.
 CARDS = [  # Sammelt alle 160 Karten als Liste für die Verwendung im Backend.
     {"id": "blue-blue-1", "owner": "blue", "color": "blue", "value": 1, "alt": "Blau 1", "src": "images/blue/one.PNG", "back": "images/back/blue.PNG"},  # Bewahrt Eigenschaften und Bildpfade dieser eindeutig identifizierten Karte.
@@ -163,16 +166,30 @@ CARDS = [  # Sammelt alle 160 Karten als Liste für die Verwendung im Backend.
     {"id": "yellow-yellow-10", "owner": "yellow", "color": "yellow", "value": 10, "alt": "Gelb 10", "src": "images/yellow/ten.PNG", "back": "images/back/yellow.PNG"},  # Bewahrt Eigenschaften und Bildpfade dieser eindeutig identifizierten Karte.
 ]  # Schliesst die vollständige Kartenliste ab.
 
-
-# Sammlung der bereits gelegten Karten.
-laidCards = []
-
-
-# Farben der teilnehmenden Spieler.
-playerColors = []
+# Farben, die ein Spieler wählen darf; entspricht den <option>-Werten in frontend/index.html.
+acceptedColors = [
+    "pink", "yellow", "green", "blue"
+]
 
 
-tenStack = {
-    #Beispiel:
-    #"yellow": 8
+# Alle offenen Räume, Schlüssel ist die RoomID (String).
+# Jeder Raum hat eigene Spielerfarben, gelegte Karten und Stände der Ligretto-Stapel.
+rooms = {
+    #Zwei Beispiele:
+    #     "123456": {                  # Room-ID des ersten Raums
+#         "playerColors": ["blue", "pink"],  # zwei Spieler in diesem Raum
+#         "laidCards": [],         # bisher keine Karten in der Mitte abgelegt
+#         "tenStack": {
+#             "blue": 8,           # Blau hat noch 8 Karten im Ligretto-Stapel
+#             "pink": 10,          # Pink hat noch 10 Karten im Ligretto-Stapel
+#         },
+#     },
+#     "654321": {                  # Room-ID eines unabhängigen zweiten Raums
+#         "playerColors": ["blue", "green"],  # Blau darf hier erneut gewählt sein
+#         "laidCards": [],         # eigene Ablage für diesen Raum
+#         "tenStack": {
+#             "blue": 10,          # Stapelstand von Blau im zweiten Raum
+#             "green": 9,          # Stapelstand von Grün im zweiten Raum
+#         },
+#     },
 }

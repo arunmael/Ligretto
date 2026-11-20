@@ -487,6 +487,23 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Erklärt: `raise` beendet die Funktion sofort, ein `return` danach braucht es nicht. Das `return` nach `raise` in `getDivideStack()` (`shuffle.py`) wird deshalb nie erreicht. Es ist harmlos, aber überflüssig.
 - **[KI]** Bug-Check nach Regel 7: BUG-015 und BUG-016 sind gefixt und aus `Bugs.md` entfernt, keine neuen Bugs. Geprüft: `{}` → `ValueError` „Ten stack missing for blue“, `{"blue": 2}` → „… for pink“, `countCards([], [], {})` → „No player colors“, eine zusätzliche Farbe in `tenStack` wird ignoriert. Die normale Zählung ist unverändert (3 : 3, beide Gewinner bzw. 5 : 1, Blau gewinnt).
 
+### 3.41 FastAPI als Abhängigkeit – [KI], 20.11.2026
+
+- Auf Wunsch von Arun `fastapi` in `requirements.txt` ergänzt. Pydantic wird als Abhängigkeit von FastAPI mitinstalliert und dient zur Prüfung der Anfrage-Modelle.
+- FastAPI ist vorerst ohne feste Versionsnummer eingetragen; die bisherigen Versionsbindungen bleiben bestehen. Die Pakete wurden bei dieser Änderung nicht installiert.
+
+### 3.42 Erste Server-Routen mit FastAPI, Räume in `memory.py` – [Arun]/[KI], 20.11.2026
+
+- **[Arun]** `backend/cards.py` in `backend/memory.py` umbenannt. `CARDS` bleibt gleich. Die einzelnen Variablen `laidCards`, `playerColors` und `tenStack` sind ersetzt durch das Dictionary `rooms` (RoomID → `playerColors`, `laidCards`, `tenStack` pro Raum). Neu ist die Liste `acceptedColors` mit den vier erlaubten Farben.
+- **[Arun]** `backend/connection/model.py`: Pydantic-Modelle `roomRequestBase` (`color`) und `joinRoomRequest` (`color`, `roomId`) für den JSON-Body.
+- **[Arun]** `backend/connection/routes.py`: FastAPI-App mit `POST /joinRoom` (`join_room()`) und `POST /createRoom` (`create_room()`). Beitreten prüft Eingabe, Raum und Farbe und antwortet mit 400, 404 oder 409; Erstellen erzeugt eine neue RoomID und legt den Raum mit 10 Karten im Ligretto-Stapel an.
+- **[Arun]** `backend/logic/createRoomId.py`: `createRoomID()` erzeugt eine 6-stellige RoomID mit `secrets`.
+- **[Arun]** `frontend/login.js`: Beide Buttons schicken Farbe und RoomID per `fetch` an `http://localhost:8000/joinRoom` bzw. `/createRoom`.
+- **[Arun]** `backend/test/connection.py` angelegt (noch leer).
+- **[KI]** Neuen Code nach Regel 6 kommentiert: Datei-Docstrings, Docstrings für die Modelle, Routen und `createRoomID()`, Kommentare zu `acceptedColors`, `rooms` und den beiden `fetch`-Aufrufen. Der veraltete Datei-Docstring von `memory.py` und der Dateikommentar von `login.js` („Noch ohne Backend“) wurden an den neuen Stand angepasst. Am Code selbst wurde nichts geändert.
+- **[KI]** Bug-Check nach Regel 7: sechs neue Bugs (BUG-017 bis BUG-021, BUG-023) und ein Verdacht (BUG-022) in `Bugs.md`. Die wichtigsten: Der Browser blockiert die Anfragen, weil CORS fehlt und Frontend und Backend beide Port 8000 wollen (BUG-017); das Frontend wartet nicht auf die Antwort (BUG-018); die beim Erstellen erzeugte RoomID kommt nie im Frontend an (BUG-019). Geprüft mit einem lokal gestarteten Server auf Port 8765.
+- **[KI]** Technische Doku nachgeführt (Überblick, Projekt starten, Projektstruktur, Ablauf, `login.js`, Backend-Module, Einschränkungen).
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -545,6 +562,9 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 20.11.2026 | [KI] | Neuen Code nach Regel 6 kommentiert, Bug-Check mit BUG-017 bis BUG-023, technische Doku nachgeführt (siehe 3.42). |
+| 20.11.2026 | [Arun] | FastAPI-Routen `/joinRoom` und `/createRoom`, Modelle, `createRoomID()`, `cards.py` → `memory.py` mit `rooms` und `acceptedColors`, `fetch` in `login.js` (siehe 3.42). |
+| 20.11.2026 | [KI] | FastAPI in `requirements.txt` ergänzt; Pydantic wird mitinstalliert (siehe 3.41). |
 | 19.11.2026 | [Arun] | `countCards()` prüft leere `playerColors` und fehlende Farben in `tenStack`, BUG-015 und BUG-016 behoben (siehe 3.40). |
 | 19.11.2026 | [Arun] | `backend/logic/winner.py` mit `countCards()` für Punkte und Gewinner, neue Variablen in `cards.py`, `getId()` in `rules.py` arbeitet ohne Präfix `image` (siehe 3.39). |
 | 19.11.2026 | [KI] | `AGENTS.md` Regel 6 „Bestehenden Code kommentieren“ neu gefasst, Bug-Check mit BUG-015 und BUG-016, technische Doku nachgeführt (siehe 3.39). |

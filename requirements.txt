@@ -3,6 +3,7 @@
 # Feste Versionen (==), damit auf jedem Rechner genau dieselbe Umgebung entsteht
 
 # --- Direkt gebraucht ---
+fastapi  # Backend-API; installiert Pydantic für die Anfrage-Modelle mit, Version vorerst nicht fixiert
 pytest==9.2.0  # Test-Framework für die Backend-Logik (shuffle.py, rules.py)
 
 # --- Abhängigkeiten von pytest (werden automatisch mitinstalliert, hier fixiert für gleiche Versionen) ---
