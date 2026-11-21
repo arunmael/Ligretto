@@ -243,6 +243,7 @@ export function createStartStack(owner) {
  * offene Karten, Zehnerstapel (versetzt übereinander, nur die oberste klickbar)
  * und den verdeckten Handstapel (Rückseite in der Spielerfarbe).
  * Die Spielerfarbe kommt aus sessionStorage.
+ * Achtung: login.js schreibt sie dort nicht mehr hinein (Farbe steht jetzt in der URL), siehe BUG-025.
  */
 // Baut die Kartenanzeige des eigenen Spielers aus den übergebenen Startstapeln auf.
 export function createDOMStack(openCards, tenStack, handCards) {

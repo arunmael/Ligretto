@@ -174,22 +174,37 @@ acceptedColors = [
 
 # Alle offenen Räume, Schlüssel ist die RoomID (String).
 # Jeder Raum hat eigene Spielerfarben, gelegte Karten und Stände der Ligretto-Stapel.
-rooms = {
-    #Zwei Beispiele:
-    #     "123456": {                  # Room-ID des ersten Raums
-#         "playerColors": ["blue", "pink"],  # zwei Spieler in diesem Raum
-#         "laidCards": [],         # bisher keine Karten in der Mitte abgelegt
-#         "tenStack": {
-#             "blue": 8,           # Blau hat noch 8 Karten im Ligretto-Stapel
-#             "pink": 10,          # Pink hat noch 10 Karten im Ligretto-Stapel
-#         },
-#     },
-#     "654321": {                  # Room-ID eines unabhängigen zweiten Raums
-#         "playerColors": ["blue", "green"],  # Blau darf hier erneut gewählt sein
-#         "laidCards": [],         # eigene Ablage für diesen Raum
-#         "tenStack": {
-#             "blue": 10,          # Stapelstand von Blau im zweiten Raum
-#             "green": 9,          # Stapelstand von Grün im zweiten Raum
-#         },
-#     },
-}
+rooms = {  # trennt die Spielstände anhand der Raum-ID
+    "123456": {  # enthält den ersten unabhängigen Spielstand
+        "playerColors": ["blue", "pink"],  # hält die vergebenen Spielerfarben fest
+        "laidCards": [],  # enthält später die Kartenstapel in der Mitte
+        "stacks": {  # speichert die Karten getrennt nach Spieler
+            "blue": {  # ordnet diese Stapel dem blauen Spieler zu
+                "tenStack": ["blue-green-7", "blue-pink-2"],  # die letzte ID ist die oberste Karte
+                "openCards": ["blue-blue-1", "blue-yellow-4", "blue-green-3"],  # diese Karten liegen offen aus
+                "handCards": ["blue-pink-8", "blue-yellow-6"],  # bewahrt die Reihenfolge der Handkarten
+            },  # schließt die Stapel des blauen Spielers ab
+            "pink": {  # ordnet diese Stapel dem pinken Spieler zu
+                "tenStack": ["pink-blue-5", "pink-yellow-9"],  # die letzte ID ist die oberste Karte
+                "openCards": ["pink-green-1", "pink-pink-4", "pink-blue-3"],  # diese Karten liegen offen aus
+                "handCards": ["pink-yellow-2", "pink-green-6"],  # bewahrt die Reihenfolge der Handkarten
+            },  # schließt die Stapel des pinken Spielers ab
+        },  # schließt die Spielerzuordnung dieses Raums ab
+    },  # schließt den ersten Raum ab
+    "654321": {  # enthält einen davon unabhängigen Spielstand
+        "playerColors": ["blue", "green"],  # Blau kann in einem anderen Raum erneut teilnehmen
+        "laidCards": [],  # hält die Ablage dieses Raums getrennt vom ersten Raum
+        "stacks": {  # speichert die Karten der Spieler dieses Raums
+            "blue": {  # gehört zum blauen Spieler im zweiten Raum
+                "tenStack": ["blue-yellow-10", "blue-blue-2"],  # die letzte ID ist die oberste Karte
+                "openCards": ["blue-green-1", "blue-pink-5", "blue-yellow-3"],  # diese Karten liegen offen aus
+                "handCards": ["blue-blue-8", "blue-green-6"],  # bewahrt die Reihenfolge der Handkarten
+            },  # schließt die Stapel des blauen Spielers ab
+            "green": {  # ordnet diese Stapel dem grünen Spieler zu
+                "tenStack": ["green-pink-7", "green-green-2"],  # die letzte ID ist die oberste Karte
+                "openCards": ["green-blue-1", "green-yellow-4", "green-pink-3"],  # diese Karten liegen offen aus
+                "handCards": ["green-green-8", "green-blue-6"],  # bewahrt die Reihenfolge der Handkarten
+            },  # schließt die Stapel des grünen Spielers ab
+        },  # schließt die Spielerzuordnung dieses Raums ab
+    },  # schließt den zweiten Raum ab
+}  # beendet den Raumspeicher

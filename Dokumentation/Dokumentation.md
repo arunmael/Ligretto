@@ -504,6 +504,25 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Bug-Check nach Regel 7: sechs neue Bugs (BUG-017 bis BUG-021, BUG-023) und ein Verdacht (BUG-022) in `Bugs.md`. Die wichtigsten: Der Browser blockiert die Anfragen, weil CORS fehlt und Frontend und Backend beide Port 8000 wollen (BUG-017); das Frontend wartet nicht auf die Antwort (BUG-018); die beim Erstellen erzeugte RoomID kommt nie im Frontend an (BUG-019). Geprüft mit einem lokal gestarteten Server auf Port 8765.
 - **[KI]** Technische Doku nachgeführt (Überblick, Projekt starten, Projektstruktur, Ablauf, `login.js`, Backend-Module, Einschränkungen).
 
+### 3.43 Aufwand bei Bugs in `AGENTS.md` – [KI], 20.11.2026
+
+- Auf Wunsch von Arun Regel 7 in `AGENTS.md` ergänzt: Jeder Bug bekommt einen **Aufwand** von 1 bis 5 (neuer Abschnitt „Aufwand“ mit Skala) und das Feld **Wie schwierig zu fixen**, das den Aufwand begründet, ohne Lösungsvorschlag. Format von `Bugs.md`, Schritt 3 und Chat-Bericht wurden entsprechend angepasst.
+- Alle offenen Bugs in `Bugs.md` (BUG-017 bis BUG-023) haben diese beiden Felder nachträglich bekommen. Die Sortierung bleibt unverändert, weil sie nach Schweregrad und Auswirkung geht, nicht nach Aufwand.
+
+### 3.44 Route `/createCards`, Antwort des Backends auswerten, Übergabe per URL – [Arun]/[KI], 21.11.2026
+
+- **[Arun]** `backend/connection/routes.py`: neue Route `POST /createCards` (`create_cards()`). Sie mischt für jede Farbe in `playerColors` mit `shuffle.getDivideStack()` die Karten, speichert sie unter `rooms[roomId]["stacks"]` und gibt sie zurück. 404, wenn der Raum nicht existiert. Die beiden `todo`-Kommentare oben in der Datei (Karten und Positionen ans Frontend senden, Warten im Frontend) wurden entfernt.
+- **[Arun]** `backend/connection/model.py`: neues Pydantic-Modell `createCards` (`roomId`).
+- **[Arun]** `backend/memory.py`: Die auskommentierten Beispiele in `rooms` sind jetzt echte Beispielräume `123456` und `654321`. Jeder Spieler hat unter `stacks` die drei Stapel `tenStack`, `openCards` und `handCards` als Listen von Karten-IDs. Den Zähler `tenStack` haben die Beispielräume nicht mehr.
+- **[Arun]** `frontend/login.js`: Beide Listener sind `async` und warten mit `await` auf die Antwort von `fetch`. Nur bei `response.ok` wird weitergeleitet, die RoomID kommt aus der Antwort des Backends. `/createRoom` bekommt nur noch die Farbe. `createRoom()` und `joinRoom()` nehmen `roomId` und `color` entgegen und hängen sie als URL-Parameter an `game.html` an. `sessionStorage` wird nicht mehr verwendet.
+- **[Arun]** `frontend/main.js`: Farbe und RoomID werden mit `URLSearchParams` aus der URL gelesen statt aus `sessionStorage`. Beim Zurückgehen zur Startseite wird `sessionStorage` nicht mehr geleert.
+- **[KI]** Neuen Code nach Regel 6 kommentiert: Docstrings für `create_cards()` und das Modell `createCards`, Kommentare zur Schleife und zum Überschreiben der Stapel in `create_cards()`, zu `createRoom()`/`joinRoom()`, den beiden `async`-Listenern, `response.ok` und den URL-Parametern in `main.js`. Veraltete Kommentare, die noch von `sessionStorage` sprachen, wurden angepasst: Dateikommentar von `login.js`, Kommentar im Formular von `index.html`, Kommentar zum Zurück-Button in `main.js`. In `createDOMStack()` (`create-stack.js`) steht ein Hinweis auf BUG-025. Am Code selbst wurde nichts geändert.
+- **[KI]** Bug-Check nach Regel 7:
+  - Neu: BUG-024 (Beitritt zu den Beispielräumen gibt `500 Internal Server Error` und reserviert die Farbe trotzdem), BUG-025 (Handstapel-Rückseite `images/back/null.PNG`, weil `createDOMStack()` die Farbe noch aus `sessionStorage` liest), BUG-026 (`/createCards` mischt beliebig oft neu, später Beigetretene haben keine Stapel) und der Verdacht BUG-027 (zwei Formate für die Stapel und ein doppelter Zehnerstapel).
+  - Aktualisiert: BUG-018 ist teilweise behoben (keine Weiterleitung mehr bei Fehlern), offen bleibt, dass der Spieler keine Fehlermeldung sieht. Herabgestuft auf Mittel. BUG-019 ist teilweise behoben (die RoomID kommt per URL auf der Spielseite an), offen bleibt, dass sie dort nicht angezeigt wird. Herabgestuft auf Mittel. Bei allen übrigen Einträgen wurden die Zeilennummern nachgeführt.
+  - Geprüft, indem die Routen-Funktionen direkt in Python aufgerufen wurden, weil für `fastapi.testclient` das Paket `httpx2` fehlt.
+- **[KI]** Technische Doku nachgeführt (siehe Chat).
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -562,6 +581,9 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 21.11.2026 | [KI] | Neuen Code nach Regel 6 kommentiert, veraltete `sessionStorage`-Kommentare angepasst, Bug-Check mit BUG-024 bis BUG-027, BUG-018 und BUG-019 aktualisiert, technische Doku nachgeführt (siehe 3.44). |
+| 21.11.2026 | [Arun] | Route `/createCards` mit Modell `createCards`, Beispielräume mit `stacks` in `memory.py`, `login.js` wartet auf die Antwort und übergibt RoomID und Farbe per URL, `main.js` liest sie aus der URL (siehe 3.44). |
+| 20.11.2026 | [KI] | Regel 7 in `AGENTS.md` um Aufwand (1–5) und „Wie schwierig zu fixen“ ergänzt, bei allen offenen Bugs nachgetragen (siehe 3.43). |
 | 20.11.2026 | [KI] | Neuen Code nach Regel 6 kommentiert, Bug-Check mit BUG-017 bis BUG-023, technische Doku nachgeführt (siehe 3.42). |
 | 20.11.2026 | [Arun] | FastAPI-Routen `/joinRoom` und `/createRoom`, Modelle, `createRoomID()`, `cards.py` → `memory.py` mit `rooms` und `acceptedColors`, `fetch` in `login.js` (siehe 3.42). |
 | 20.11.2026 | [KI] | FastAPI in `requirements.txt` ergänzt; Pydantic wird mitinstalliert (siehe 3.41). |

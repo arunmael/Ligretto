@@ -118,7 +118,7 @@ Prüfe die Änderungen auf:
 **Schritt 3: Alte Einträge in `Bugs.md` prüfen**
 Prüfe **jeden** offenen Eintrag gegen den aktuellen Code (nicht nur gegen den Diff):
 * **Gefixt:** Eintrag komplett aus `Bugs.md` löschen.
-* **Noch offen:** Eintrag aktualisieren. Zeilennummern, Funktions oder Klassennamen, Beschreibung und Schweregrad an den aktuellen Stand anpassen. Zeilen verschieben sich, also immer neu nachschauen.
+* **Noch offen:** Eintrag aktualisieren. Zeilennummern, Funktions oder Klassennamen, Beschreibung, Schweregrad und Aufwand an den aktuellen Stand anpassen. Zeilen verschieben sich, also immer neu nachschauen.
 * **Nicht eindeutig:** Eintrag drin lassen und im Chat sagen, warum du es nicht sicher beurteilen kannst.
 
 **Schritt 4: Neue Bugs in `Bugs.md` eintragen**
@@ -143,6 +143,16 @@ Wenn es keine offenen Bugs gibt, entfällt der Hinweis.
 
 Security Lücken sind mindestens **Mittel**, im Zweifel **Kritisch**.
 
+### Aufwand
+Jeder Bug bekommt einen Aufwand auf einer Skala von 1 bis 5, wie schwierig es ist, ihn zu fixen:
+* **1:** Eine Stelle, klar was falsch ist, in wenigen Minuten erledigt.
+* **2:** Eine Funktion oder wenige Zeilen, etwas Nachdenken nötig.
+* **3:** Mehrere Stellen oder Dateien, oder ein Thema, das man zuerst verstehen muss (z. B. asynchroner Code).
+* **4:** Frontend und Backend zusammen, oder es fehlt ein Konzept, das zuerst entschieden werden muss.
+* **5:** Grosser Umbau oder Architekturentscheid.
+
+Unter **Wie schwierig zu fixen** steht kurz, **warum** der Bug diesen Aufwand hat: wie viele Stellen betroffen sind, was man dafür verstehen muss, was es schwierig oder einfach macht. Es steht dort **kein Lösungsvorschlag** und kein Code, nur die Einschätzung.
+
 ### Format von `Bugs.md`
 IDs fortlaufend vergeben (`BUG-001`, `BUG-002`, ...). Eine ID wird nie wiederverwendet, auch wenn der Bug gelöscht wurde. Damit du die nächste freie ID kennst, steht oben im File ein Zähler. Einträge nach Dringlichkeit sortieren: Der Bug, der zuerst gefixt werden sollte, steht zuoberst. Zuerst nach Schweregrad (Kritisch vor Mittel vor Klein), innerhalb desselben Schweregrads nach Auswirkung (sichtbares Fehlverhalten im Spiel vor Fehlern ohne sichtbare Folgen, aktuell auslösbare Bugs vor solchen, die zurzeit nicht erreichbar sind). Diese Sortierung wird **jedes Mal automatisch** neu geprüft und angepasst, wenn `Bugs.md` verändert wird, auch ausserhalb des Bug-Check-Ablaufs.
 
@@ -153,6 +163,7 @@ Nächste freie ID: BUG-008
 
 ## BUG-004: Kurzer, klarer Titel
 * **Schweregrad:** Kritisch
+* **Aufwand:** 3 von 5
 * **Typ:** Bug / Edge Case / Security
 * **Status:** Bestätigt / Verdacht
 * **Gefunden am:** 2026-11-13
@@ -163,6 +174,7 @@ Nächste freie ID: BUG-008
 * **Was ist das Problem:** Was genau falsch läuft und was der Nutzer davon merkt.
 * **Wieso tritt es auf:** Die technische Ursache, Schritt für Schritt.
 * **Wann tritt es auf:** Konkretes Beispiel oder Eingabe, die den Bug auslöst.
+* **Wie schwierig zu fixen:** Warum der Aufwand so hoch ist, ohne Lösungsvorschlag.
 ```
 
 Wenn `Bugs.md` keine offenen Bugs mehr hat, bleibt das File mit Titel und Zähler bestehen und darunter steht `Keine offenen Bugs.`
@@ -170,9 +182,9 @@ Wenn `Bugs.md` keine offenen Bugs mehr hat, bleibt das File mit Titel und Zähle
 ### Format des Chat Berichts
 Immer in dieser Reihenfolge:
 
-1. **Neu gefunden:** Jeder Bug ausführlich mit allen Feldern wie in `Bugs.md`: was das Problem ist, wieso es auftritt, wann es auftritt und **ganz genau welche Zeilen in welchem File** betroffen sind.
+1. **Neu gefunden:** Jeder Bug ausführlich mit allen Feldern wie in `Bugs.md`: was das Problem ist, wieso es auftritt, wann es auftritt, Aufwand und wie schwierig es zu fixen ist und **ganz genau welche Zeilen in welchem File** betroffen sind.
 2. **Gelöst und aus `Bugs.md` entfernt:** ID, Titel und ein Satz, woran du erkennst, dass es gefixt ist.
-3. **Weiterhin offen:** ID, Titel, Schweregrad und aktuelle Zeilen. Ausführlich nur, wenn sich am Bug etwas verändert hat.
+3. **Weiterhin offen:** ID, Titel, Schweregrad, Aufwand und aktuelle Zeilen. Ausführlich nur, wenn sich am Bug etwas verändert hat.
 4. **Nicht eindeutig:** Falls vorhanden, mit Begründung.
 5. **Ausgeführte Befehle:** Welche Tests oder Builds du laufen gelassen hast und bestätigen, dass `git status` danach gleich ist wie vorher (bis auf `Bugs.md`).
 

@@ -5,13 +5,13 @@ uvicorn backend.connection.routes:app
 """
 from backend.connection.model import roomRequestBase
 from backend.connection.model import joinRoomRequest
+from backend.connection.model import createCards
 from backend.logic.createRoomId import createRoomID
+from backend.logic import shuffle
 from backend import memory
 from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
-
-#todo Für beiden Routes bauen dass auch die richtigen Karten und die Postion auf dem Bildschirm an das Frontend gesendet wird
 
 
 @app.post("/joinRoom")
@@ -61,3 +61,33 @@ def create_room(data: roomRequestBase):
         return {"roomId": roomId, "color": data.color}
     else:
         raise HTTPException(status_code=400, detail="Diese Farbe ist nicht erlaubt.")
+
+
+#todo frontend dazu programmieren  
+@app.post("/createCards")
+def create_cards(data: createCards):
+    """Mischt für jeden Spieler im Raum seine 40 Karten und verteilt sie auf die drei Startstapel.
+
+    Speichert die Stapel unter memory.rooms[roomId]["stacks"] und gibt sie zurück:
+    {"stacks": {farbe: {"tenStack": [...], "openCards": [...], "handCards": [...]}}}.
+    Die Karten sind ganze Karten-Dictionaries aus memory.CARDS, nicht nur IDs.
+    Fehler: 404, wenn der Raum nicht existiert.
+    """
+    if data.roomId in memory.rooms:
+        colors = memory.rooms[data.roomId]["playerColors"]
+        stacks = {}
+        # Jeder Spieler bekommt nur Karten mit seiner Farbe als Besitzer (owner), siehe shuffle.getPlayerCards()
+        for color in colors:
+            tenStack, openCards, handCards = shuffle.getDivideStack(memory.CARDS, color);
+            stacks[color] = {
+                "tenStack": tenStack,
+                "openCards": openCards,
+                "handCards": handCards
+            }
+
+        memory.rooms[data.roomId]["stacks"] = stacks  # überschreibt bereits verteilte Stapel, ein erneuter Aufruf mischt also neu
+
+
+        return {"stacks": stacks}
+    else:
+        raise HTTPException(status_code=404, detail="Der Raum konnte nicht gefunden werden")

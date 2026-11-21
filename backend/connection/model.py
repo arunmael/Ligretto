@@ -12,3 +12,7 @@ class roomRequestBase(BaseModel):
 class joinRoomRequest(roomRequestBase):
     """Body von /joinRoom: Farbe (geerbt) und die RoomID des Raums, dem man beitreten will."""
     roomId: str
+
+class createCards(BaseModel):
+    """Body von /createCards: die RoomID des Raums, in dem die Karten verteilt werden."""
+    roomId: str

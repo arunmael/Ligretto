@@ -9,7 +9,11 @@ import * as rules from "./rules.js"; // Stellt die vorhandenen Prüfungen für F
 
 // Prüft die Spielerfarbe, baut das Spiel auf und verbindet die Klickaktionen.
 document.addEventListener("DOMContentLoaded", () => {
-    const owner = sessionStorage.getItem("playerColor");
+    // Farbe und RoomID kommen als URL-Parameter von login.js (game.html?roomId=...&color=...)
+    const params = new URLSearchParams(window.location.search);
+    const owner = params.get("color");
+    const roomId = params.get("roomId") // wird noch nicht verwendet, später für die Anfragen ans Backend gedacht
+    
     if (!["blue", "green", "pink", "yellow"].includes(owner)) {
         alert("Etwas ist Schief gelaufen")
         window.location.href = "index.html";
@@ -23,10 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastCard = null; // vorherige Auswahl, damit ihr Rahmen zurückgesetzt werden kann
     const joinOtherRoom = document.querySelector("#joinOtherRoom");
 
-    // Zurück zur Startseite, gespeicherte Spielerdaten verwerfen.
+    // Zurück zur Startseite. Farbe und RoomID stehen nur in der URL und fallen beim Seitenwechsel automatisch weg.
     joinOtherRoom.addEventListener("click", () => {
-        sessionStorage.removeItem("playerColor");
-        sessionStorage.removeItem("roomId");
         window.location.href = "index.html";
     });
 
