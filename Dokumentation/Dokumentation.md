@@ -523,6 +523,14 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
   - Geprüft, indem die Routen-Funktionen direkt in Python aufgerufen wurden, weil für `fastapi.testclient` das Paket `httpx2` fehlt.
 - **[KI]** Technische Doku nachgeführt (siehe Chat).
 
+### 3.45 Lokale Startbefehle und CORS – [Arun]/[KI], 21.11.2026
+
+- **[KI]** Auf ausdrücklichen Wunsch von **[Arun]** bleibt BUG-017 in `Dokumentation/Bugs.md`: lokal behoben, API-Adresse und gegebenenfalls CORS vor dem Hosting anzupassen. Veraltete Fehlerbeschreibung ersetzt und betroffene Zeilen aktualisiert. Die Sortierung wurde geprüft: Die bei unveränderter Veröffentlichung kritische Einschränkung bleibt vor den mittleren und kleinen Einträgen. Die technische Doku enthält den Hosting-Hinweis bereits; keine weitere Anpassung nötig.
+- **[Arun]** `backend/connection/routes.py`: CORS-Middleware mit Origin `http://localhost:5500`, Methoden GET/POST und Header `Content-Type` ergänzt.
+- **[KI]** Auf Wunsch von Arun alle lokalen Startbefehle oben in der README ergänzt: Projektpfad, Aktivieren von `.venv`, Backend auf Port 8000, Frontend in einem zweiten Terminal auf Port 5500, Browseradresse und Stoppen mit Ctrl+C. Einrichtung einer neuen Python-Umgebung separat beschrieben; Uvicorn muss wegen BUG-023 zusätzlich installiert werden.
+- **[KI]** Die widersprüchliche alte Frontend-Portangabe in der README ersetzt. Technische Dokumentation in Abschnitt 2 (Start) und 9.6 (CORS-Ablauf) aktualisiert; Stand bleibt 21.11.2026.
+- **[KI]** Alle offenen Bugs gegen den aktuellen Code geprüft. ASGI-Anfragen ohne Dateischreibzugriffe bestätigen erfolgreiche Preflights, Raumerstellung und Beitritt für `http://localhost:5500`; der andere Origin `http://127.0.0.1:5500` wird abgelehnt. BUG-017 ist mit der korrigierten lokalen Startanleitung behoben. BUG-020, BUG-024 und BUG-026 reproduziert; BUG-022 und BUG-027 bleiben Verdachtsfälle. Keine neuen Bugs in der CORS-Änderung gefunden. Anwendungscode unverändert; `git status` war direkt nach den Tests unverändert.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
 Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
@@ -581,6 +589,9 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 21.11.2026 | [KI] | Auf Wunsch von Arun BUG-017 in der bestehenden Bugliste als lokal behoben behalten und die vor dem Hosting nötigen Anpassungen an API-Adresse und CORS vermerkt (siehe 3.45). |
+| 21.11.2026 | [KI] | Startbefehle ganz oben in der README, getrennte Ports 5500/8000, Aktivierung von .venv und Einrichtungshinweis ergänzt; Bug-Check und ASGI-Prüfung durchgeführt, technische Doku zu Start und CORS aktualisiert (siehe 3.45). |
+| 21.11.2026 | [Arun] | CORS für das lokale Frontend auf http://localhost:5500 freigegeben (siehe 3.45). |
 | 21.11.2026 | [KI] | Neuen Code nach Regel 6 kommentiert, veraltete `sessionStorage`-Kommentare angepasst, Bug-Check mit BUG-024 bis BUG-027, BUG-018 und BUG-019 aktualisiert, technische Doku nachgeführt (siehe 3.44). |
 | 21.11.2026 | [Arun] | Route `/createCards` mit Modell `createCards`, Beispielräume mit `stacks` in `memory.py`, `login.js` wartet auf die Antwort und übergibt RoomID und Farbe per URL, `main.js` liest sie aus der URL (siehe 3.44). |
 | 20.11.2026 | [KI] | Regel 7 in `AGENTS.md` um Aufwand (1–5) und „Wie schwierig zu fixen“ ergänzt, bei allen offenen Bugs nachgetragen (siehe 3.43). |

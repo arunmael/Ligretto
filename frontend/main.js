@@ -7,6 +7,7 @@ import * as createStack from "./create-stack.js";
 import * as moveCards from "./move-cards.js";
 import * as rules from "./rules.js"; // Stellt die vorhandenen Prüfungen für Farbe und Kartenwert wieder bereit.
 
+
 // Prüft die Spielerfarbe, baut das Spiel auf und verbindet die Klickaktionen.
 document.addEventListener("DOMContentLoaded", () => {
     // Farbe und RoomID kommen als URL-Parameter von login.js (game.html?roomId=...&color=...)
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Spielstart: Karten verteilen und anzeigen
+    // TODO: createStartStack gibt es nicht mehr -> durch createStack.createDOMStack(owner, roomId) ersetzen; die Klick-Handler unten brauchen die Stapel des Owners dann aus dem Backend statt aus playerStartStacks
     const playerStartStacks = createStack.createStartStack(owner);
 
     createStack.createPlayArea();

@@ -5,6 +5,8 @@
  * (game.html?roomId=...&color=...) an die Spielseite übergeben.
  */
 
+//todo ein warte Screen einblenden mit einem Button (der Button nur sichtbar für die Person die den Raum erstellt hat) mit dem Button sagt man beginnt das Spiel. Das ist wichtig damit die Karten richtigen dargestellt werden in create-stack.js
+
 /**
  * Liest die aktuellen Formularwerte aus.
  * @returns {{color: string, roomId: string}}
@@ -17,6 +19,7 @@ export function getSubmitValues() {
     const color = chosenColor.value;
     return { color, roomId }
 }
+
 
 /** Erstellt einen neuen Raum. Bisher nur Weiterleitung zur Spielseite. */
 // Öffnet die Spielseite für den neu erstellten Raum. Der Raum selbst wurde vorher vom Backend angelegt.

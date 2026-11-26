@@ -6,13 +6,22 @@ uvicorn backend.connection.routes:app
 from backend.connection.model import roomRequestBase
 from backend.connection.model import joinRoomRequest
 from backend.connection.model import createCards
+from backend.connection.model import getColors
 from backend.logic.createRoomId import createRoomID
 from backend.logic import shuffle
 from backend import memory
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
+# CORS: Der Browser blockiert sonst Anfragen vom Frontend (Port 5500) an das Backend (Port 8000).
+# Vor dem Hosting muss allow_origins auf die echte Adresse angepasst werden.
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=["http://localhost:5500"],
+    allow_methods=["GET", "POST"], 
+    allow_headers=["Content-Type"],
+)
 
 @app.post("/joinRoom")
 def join_room(data: joinRoomRequest):
@@ -69,7 +78,8 @@ def create_cards(data: createCards):
     """Mischt für jeden Spieler im Raum seine 40 Karten und verteilt sie auf die drei Startstapel.
 
     Speichert die Stapel unter memory.rooms[roomId]["stacks"] und gibt sie zurück:
-    {"stacks": {farbe: {"tenStack": [...], "openCards": [...], "handCards": [...]}}}.
+    {"stacks": {farbe: {"tenStack": [...], "openCards": [...], "handCards": [...]}}, "playerColors": [...]}.
+    playerColors gibt die Reihenfolge der Spieler an, damit das Frontend die Plätze verteilen kann.
     Die Karten sind ganze Karten-Dictionaries aus memory.CARDS, nicht nur IDs.
     Fehler: 404, wenn der Raum nicht existiert.
     """
@@ -88,6 +98,9 @@ def create_cards(data: createCards):
         memory.rooms[data.roomId]["stacks"] = stacks  # überschreibt bereits verteilte Stapel, ein erneuter Aufruf mischt also neu
 
 
-        return {"stacks": stacks}
+        return {"stacks": stacks, "playerColors": colors}
     else:
         raise HTTPException(status_code=404, detail="Der Raum konnte nicht gefunden werden")
+
+
+    

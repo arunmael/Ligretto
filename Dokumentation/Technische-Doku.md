@@ -29,27 +29,28 @@ Ligretto ist ein Kartenspiel für mehrere Spieler, das im Browser laufen soll. J
 **Frontend:** Weil die JavaScript-Dateien als ES-Module geladen werden, braucht es einen lokalen Webserver. Ein Doppelklick auf `index.html` funktioniert nicht.
 
 ```bash
-cd frontend
-python3 -m http.server 8000
+cd frontend # wechselt vom Projektordner zu den Dateien der Website
+python3 -m http.server 5500 # verwendet den in CORS freigegebenen Frontend-Port
 ```
 
-Danach im Browser `http://localhost:8000` öffnen.
+Danach im Browser genau `http://localhost:5500` öffnen. Das Backend läuft in einem zweiten Terminal. Vollständige Startbefehle mit Aruns Projektpfad stehen oben in der [README](../README.md).
 
 **Python-Umgebung (venv):**
 
 ```bash
 python3 -m venv .venv          # nur einmal, falls .venv fehlt
 source .venv/bin/activate      # bei jeder neuen Terminal-Sitzung
-pip install -r requirements.txt
+python -m pip install -r requirements.txt # installiert die Projektabhängigkeiten in die aktive Umgebung
+python -m pip install uvicorn # ergänzt den bisher nicht in requirements.txt enthaltenen Server (BUG-023)
 ```
 
 **Backend-Server**, im Projektordner (nicht in `backend/`) mit aktivem venv, damit die Imports mit `backend.` funktionieren:
 
 ```bash
-uvicorn backend.connection.routes:app
+python -m uvicorn backend.connection.routes:app --port 8000 # startet die API auf dem von login.js verwendeten Port
 ```
 
-`uvicorn` nimmt standardmässig Port 8000, also denselben wie das Frontend oben. Siehe BUG-017 in [Bugs.md](Bugs.md).
+Frontend und Backend verwenden getrennte Ports: 5500 und 8000. Beide Terminals bleiben offen; Ctrl+C stoppt den jeweiligen Server.
 
 **Tests** (sobald vorhanden), im Projektordner mit aktivem venv:
 
@@ -328,6 +329,8 @@ Start: `uvicorn backend.connection.routes:app` im Projektordner (Abschnitt 2).
 | `createCards` | `roomId: str` |
 
 **`routes.py`** – FastAPI-App `app`:
+
+`CORSMiddleware` erlaubt dem Origin `http://localhost:5500` die Methoden GET und POST sowie den Header `Content-Type`. Sie beantwortet auch die OPTIONS-Preflight-Anfragen des Browsers. `http://127.0.0.1:5500` ist ein anderer Origin und nicht freigegeben. Diese Konfiguration ist für die lokale Entwicklung gedacht; bei einer Veröffentlichung müssen API-Adresse und gegebenenfalls CORS-Freigabe zur Bereitstellung passen.
 
 | Route | Funktion | Body | Erfolg | Fehler |
 |---|---|---|---|---|
