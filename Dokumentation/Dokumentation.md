@@ -1,6 +1,6 @@
 # Dokumentation – Ligretto
 
-> **Hinweis:** Diese Dokumentation wurde von einer KI (Claude) geschrieben und von Arun geprüft.
+> **Hinweis:** Diese Dokumentation wurde von einer KI geschrieben und von Arun geprüft.
 
 ## Legende: Wer hat was gemacht?
 
@@ -531,9 +531,30 @@ Verglichen wurde der Arbeitsstand (noch nicht committet) mit dem letzten Commit 
 - **[KI]** Die widersprüchliche alte Frontend-Portangabe in der README ersetzt. Technische Dokumentation in Abschnitt 2 (Start) und 9.6 (CORS-Ablauf) aktualisiert; Stand bleibt 21.11.2026.
 - **[KI]** Alle offenen Bugs gegen den aktuellen Code geprüft. ASGI-Anfragen ohne Dateischreibzugriffe bestätigen erfolgreiche Preflights, Raumerstellung und Beitritt für `http://localhost:5500`; der andere Origin `http://127.0.0.1:5500` wird abgelehnt. BUG-017 ist mit der korrigierten lokalen Startanleitung behoben. BUG-020, BUG-024 und BUG-026 reproduziert; BUG-022 und BUG-027 bleiben Verdachtsfälle. Keine neuen Bugs in der CORS-Änderung gefunden. Anwendungscode unverändert; `git status` war direkt nach den Tests unverändert.
 
+### 3.46 Backend-Stapel und Aufbau für mehrere Spieler – [Arun]/[KI], 26.11.2026
+
+- **[Arun]** `frontend/create-stack.js`: Lokale Kartenliste `CARDS`, `getDeck()` und `createStartStack()` entfernt. `fetchStacks(roomId)` holt `{ stacks, playerColors }` über `/createCards`; `getTenStack()`, `getOpenCards()` und `getHandCards()` lesen die Teilstapel. `createDOMStack(owner, roomId)` ist asynchron und baut die Stapel aller Spieler auf: eigene Farbe unten, Gegner oben, rechts und links. Zehnerstapel behalten den Versatz und die Beschränkung auf die oberste klickbare Karte. Die Funktion gibt keine Stapel zurück.
+- **[Arun]** `backend/connection/routes.py`: `/createCards` gibt zusätzlich `playerColors` zurück. Der ergänzte Import `getColors` verweist auf einen nicht vorhandenen Namen und verhindert derzeit den Backend-Start.
+- **[Arun]** `frontend/login.js` enthält ein TODO für Wartebildschirm und Start-Button des Raumerstellers. `frontend/main.js` enthält ein TODO zur Umstellung des Spielstarts; die ausführbaren Aufrufe und Klick-Handler verwenden weiterhin die alte Schnittstelle. `frontend/notes.js` enthält nicht eingebundene Codefragmente für DOM-Aufbau und Datenabruf.
+- **[KI]** Vor dem Schreiben sämtliche damals nicht committeten Änderungen und alle elf bisherigen Bug-Einträge geprüft. Vier neue Befunde dokumentiert: BUG-028 (fehlender Backend-Import), BUG-029 (fehlender `CARDS`-Export), BUG-030 (doppelte Deklarationen in Notizen) und BUG-031 (doppelte DOM-ID). BUG-025 auf den aktuellen Integrationsfehler aktualisiert und als kritisch eingestuft; BUG-026 wegen des Überschreibens der gespeicherten Stapel auf Mittel angehoben. BUG-022 und BUG-027 bleiben Verdachtsfälle. Kein bestehender Eintrag vollständig erledigt oder entfernt.
+- **[KI]** Geprüft mit Python-Import, AST-Syntaxprüfung, Kartenverteilung für alle vier Farben (10/3/27, je 40 eindeutige IDs), Node-Modulimport, Syntaxprüfung der Notizdatei und simuliertem DOM-Aufbau. Backend- und Regelmodulimport scheitern wie dokumentiert; Python-Syntax und Verteilung bestehen. Der normale Browser-Spielablauf wurde nicht erfolgreich getestet. Die Backend-Routen konnten wegen BUG-028 nicht erneut ausgeführt werden; alte Befunde wurden statisch überprüft. Ein zunächst nicht unterstützter Node-Schalter wurde beim erneuten Prüfaufruf weggelassen.
+- **[KI]** `git status` war nach den Prüfungen unverändert. Arun bestätigte anschliessend die vorgeschlagenen Dateiänderungen. Der geprüfte Code wurde zwischenzeitlich als `4b6c11f` gespeichert. Während des abschliessenden Buglisten-Schritts entstand ausschliesslich `Bugs.md` im Root.
+- **[KI]** Bugliste mit unveränderten bestehenden IDs nach `Bugs.md` im Projekt-Root übernommen, nächste freie ID auf BUG-032 gesetzt und alle Einträge nach Schweregrad und Auswirkung sortiert. BUG-017 bleibt als ausdrücklich gewünschter Hosting-Hinweis erhalten. Anschliessend `Dokumentation/Bugs.md` durch einen Verweis ersetzt; keine Anwendungscode-Datei geändert.
+- **[KI]** Technische Doku auf Stand 26.11.2026 aktualisiert: Übersicht, Startblockaden, Struktur, Ablauf, Datenmodell, Frontend-Funktionen, API-Rückgabe, Mehrspielerpositionen und Einschränkungen. Sie beschreibt ausdrücklich den unvollständigen Integrationsstand. Dieses Arbeitsprotokoll und das Änderungsprotokoll um die Änderungen ergänzt.
+
+### 3.47 Wartescreen auf der Startseite, Backend startet wieder – [Arun]/[KI], 27.11.2026
+
+- **[Arun]** `frontend/index.html`: Neuer Wartescreen `#loadingScreen` mit Überschrift und den Buttons `#startGame` („Starte das Spiel“) und `#joinOtherLobbey` („Geh zurück in die Lobby“).
+- **[Arun]** `frontend/login.css`: Regel `[hidden] { display: none !important; }`, damit ausgeblendete Elemente nicht durch `form * { display: block }` wieder sichtbar werden; Layout für `#loadingScreen` im Raster von `main`.
+- **[Arun]** `frontend/login.js`: Neue Funktionen `openLobbyScreen()` und `joinOtherLobby()` zum Umschalten zwischen Formular und Wartescreen. `createRoom()` in `startGame()` umbenannt, `joinRoom()` entfernt. Nach erfolgreichem Beitreten oder Erstellen wird jetzt der Wartescreen geöffnet statt direkt weitergeleitet; erst „Starte das Spiel“ leitet zur Spielseite. `data`, `color` und `roomId` sind gemeinsame Variablen im `DOMContentLoaded`-Listener.
+- **[Arun]** `backend/connection/routes.py`: Fehlerhaften Import `getColors` entfernt, CORS-Freigabe von `http://localhost:5500` auf alle Origins (`*`) erweitert.
+- **[KI]** Bug Check nach Regel 7: Alle nicht committeten Änderungen und alle offenen Einträge in `Bugs.md` geprüft. BUG-028 ist gefixt und wurde entfernt (Modulimport funktioniert). Neu: BUG-032 (Raumersteller startet ohne RoomID und Farbe, kritisch) und BUG-033 („Zurück in die Lobby“ meldet nicht ab, mittel). BUG-017 um die CORS-Freigabe für alle Origins ergänzt, BUG-019 um den Wartescreen erweitert, Zeilennummern aller Backend- und `login.js`-Einträge angepasst. Nächste freie ID: BUG-034.
+- **[KI]** Geprüft mit Python-Import der Routen, direkten Aufrufen von `create_room()`, `join_room()` und `create_cards()` im Arbeitsspeicher (BUG-020, BUG-024, BUG-026, BUG-033 reproduziert), ASGI-Preflight für drei Origins, Node-Import von `rules.js` und `create-stack.js` sowie `node --check` für `login.js` und `notes.js`. Keine Pakete installiert, kein Anwendungscode geändert; `git status` war nach den Prüfungen unverändert.
+- **[KI]** Technische Doku auf Stand 27.11.2026 aktualisiert: Überblick, Start, Ablauf (Wartescreen), DOM-IDs der Startseite, Funktionen von `login.js`, CORS in `routes.py` und bekannte Einschränkungen. Dieses Arbeitsprotokoll und das Änderungsprotokoll ergänzt.
+
 ## 4. Beobachtungen zum aktuellen Stand – [KI]
 
-Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
+Diese historischen Beobachtungen stammen aus früheren Arbeitsständen. Der aktuelle Aufbau steht in der technischen Doku, die aktuelle Liste offener Bugs in [Bugs.md](../Bugs.md). Bei der damaligen Durchsicht wurde **nichts** am Code geändert, gemäss `AGENTS.md`.
 
 1. In `login.js` wird `roomId` gesetzt, aber nirgends weiterverwendet. `joinRoom()` bekommt die RoomID nicht übergeben.
 2. `game.html` bindet nur `styles.css` ein, nicht `game.css`. Die Regeln in `game.css` greifen deshalb noch nicht.
@@ -579,7 +600,7 @@ Diese Punkte hat die KI beim Durchsehen bemerkt. Es wurde **nichts** am Code ge�
 
 Erledigt seit der letzten Version: Punkte 6 und 37 (`.gitignore` für `.DS_Store` und Python, siehe 3.36), Punkte 15 (Klick ohne Auswahl), 31 (`isAllowed()` mit `null`) und 32 (Auswahl bei verbotenem Zug), siehe 3.34; `openCards.append[i]` in `shuffle.py` (siehe 3.21), Punkte 33 und 35 (Import in `shuffle.py` entfernt, siehe 3.23).
 
-Offene Bugs werden seit dem 13.11.2026 zusätzlich in `Dokumentation/Bugs.md` geführt (Regel 7).
+Offene Bugs wurden seit dem 13.11.2026 zusätzlich in `Dokumentation/Bugs.md` geführt. Seit dem 26.11.2026 steht die aktuelle Liste gemäss Regel 7 in [Bugs.md](../Bugs.md); die bisherige Datei verweist darauf.
 
 Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rules.js`), 20 (Regelprüfung beim Ablegen), 21 (Karte bleibt in `openCards`), 27 (Farbe bei „Room erstellen“), 28 (`sessionStorage` beim Zurückgehen). Früher schon: `login.js` wird nicht mehr doppelt eingebunden.
 
@@ -589,6 +610,10 @@ Erledigt in früheren Versionen: Punkte 14, 22, 23, 24 (Import und Logik in `rul
 
 | Datum | Wer | Was |
 |---|---|---|
+| 27.11.2026 | [Arun] | Wartescreen mit Start- und Zurück-Button auf der Startseite, `openLobbyScreen()`, `joinOtherLobby()`, `createRoom()` → `startGame()`, `joinRoom()` entfernt; `getColors`-Import entfernt, CORS für alle Origins (siehe 3.47). |
+| 27.11.2026 | [KI] | Bug-Check: BUG-028 gefixt und entfernt, BUG-032 und BUG-033 neu, BUG-017 und BUG-019 erweitert; technische Doku, Arbeits- und Änderungsprotokoll aktualisiert, Anwendungscode unverändert (siehe 3.47). |
+| 26.11.2026 | [Arun] | Backend-Stapelabruf, Getter, asynchroner DOM-Aufbau für mehrere Spieler, API-Rückgabe mit Spielerfarben, TODOs für Spielstart und Wartebildschirm sowie Code-Notizen; Integration noch unvollständig (siehe 3.46). |
+| 26.11.2026 | [KI] | Bug-Check mit BUG-028 bis BUG-031, bestehende Einträge aktualisiert, zentrale Bugliste im Root und Verweis am alten Ort; technische Doku, Arbeits- und Änderungsprotokoll nach Freigabe aktualisiert, Anwendungscode unverändert (siehe 3.46). |
 | 21.11.2026 | [KI] | Auf Wunsch von Arun BUG-017 in der bestehenden Bugliste als lokal behoben behalten und die vor dem Hosting nötigen Anpassungen an API-Adresse und CORS vermerkt (siehe 3.45). |
 | 21.11.2026 | [KI] | Startbefehle ganz oben in der README, getrennte Ports 5500/8000, Aktivierung von .venv und Einrichtungshinweis ergänzt; Bug-Check und ASGI-Prüfung durchgeführt, technische Doku zu Start und CORS aktualisiert (siehe 3.45). |
 | 21.11.2026 | [Arun] | CORS für das lokale Frontend auf http://localhost:5500 freigegeben (siehe 3.45). |

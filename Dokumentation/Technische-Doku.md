@@ -1,10 +1,10 @@
 # Technische Dokumentation – Ligretto
 
-> **Hinweis:** Diese Dokumentation wurde von einer KI (Claude) geschrieben und von Arun geprüft. Der Code stammt grösstenteils von Arun. Wer was gemacht hat, steht im Arbeitsprotokoll [Dokumentation.md](Dokumentation.md).
+> **Hinweis:** Diese Dokumentation wurde von einer KI geschrieben und von Arun geprüft. Der Code stammt grösstenteils von Arun. Wer was gemacht hat, steht im Arbeitsprotokoll [Dokumentation.md](Dokumentation.md).
 
 Diese Datei beschreibt den **aktuellen Aufbau** des Projekts: welche Dateien es gibt, was die Funktionen machen und wie sie zusammenspielen. Sie wird nur angepasst, wenn sich am Aufbau etwas ändert (siehe Abschnitt 12). Einzelne Änderungen und Bugfixes stehen im Änderungsprotokoll von `Dokumentation.md` und in der Git-Historie.
 
-Stand: 21.11.2026
+Stand: 27.11.2026
 
 ---
 
@@ -13,8 +13,9 @@ Stand: 21.11.2026
 Ligretto ist ein Kartenspiel für mehrere Spieler, das im Browser laufen soll. Jeder Spieler hat ein eigenes Deck mit 40 Karten und legt so schnell wie möglich Karten in aufsteigender Reihenfolge (1 bis 10, gleiche Farbe) auf gemeinsame Stapel in der Tischmitte.
 
 **Aktueller Stand:**
-- **Frontend:** Startseite und Spielseite für **einen** Spieler. Karten werden verteilt, angezeigt und nach den Regeln aufs Spielfeld gelegt.
-- **Backend:** Python-Module für Kartenliste, Kartenverteilung, Spielregeln und Punktezählung. Dazu ein erster FastAPI-Server mit den Routen `/joinRoom`, `/createRoom` und `/createCards`, der Räume und die Startstapel im Arbeitsspeicher verwaltet. Das Frontend schickt beim Beitreten und Erstellen eine Anfrage und leitet nur bei Erfolg zur Spielseite weiter. Die Karten auf der Spielseite werden aber noch im Frontend verteilt, nicht vom Backend.
+- **Frontend:** `create-stack.js` holt Startstapel vom Backend und enthält den Aufbau für bis zu vier Spieler. Die Anbindung in `main.js` ist noch unvollständig. Der fehlende `CARDS`-Export verhindert das Laden der Spielseite (BUG-029); danach blockiert die alte Aufrufschnittstelle den Aufbau (BUG-025).
+- **Startseite:** Nach erfolgreichem Beitreten oder Erstellen blendet `login.js` das Formular aus und zeigt einen Wartescreen mit „Starte das Spiel“ und „Geh zurück in die Lobby“. Beim Erstellen fehlen dem Start-Button RoomID und Farbe (BUG-032).
+- **Backend:** Python-Module für Kartenliste, Kartenverteilung, Spielregeln und Punktezählung. Die FastAPI-Routen verwalten Räume und Startstapel im Arbeitsspeicher und lassen sich starten.
 
 | Bereich | Technik |
 |---|---|
@@ -26,14 +27,16 @@ Ligretto ist ein Kartenspiel für mehrere Spieler, das im Browser laufen soll. J
 
 ## 2. Projekt starten
 
+Die folgenden Befehle beschreiben die lokale Konfiguration. Backend und Startseite laufen; die Spielseite ist durch BUG-029 und BUG-025 blockiert.
+
 **Frontend:** Weil die JavaScript-Dateien als ES-Module geladen werden, braucht es einen lokalen Webserver. Ein Doppelklick auf `index.html` funktioniert nicht.
 
 ```bash
 cd frontend # wechselt vom Projektordner zu den Dateien der Website
-python3 -m http.server 5500 # verwendet den in CORS freigegebenen Frontend-Port
+python3 -m http.server 5500 # verwendet den in der README beschriebenen Frontend-Port
 ```
 
-Danach im Browser genau `http://localhost:5500` öffnen. Das Backend läuft in einem zweiten Terminal. Vollständige Startbefehle mit Aruns Projektpfad stehen oben in der [README](../README.md).
+Danach im Browser `http://localhost:5500` öffnen (wegen der CORS-Freigabe für alle Origins funktioniert auch `127.0.0.1:5500`). Das Backend läuft in einem zweiten Terminal. Vollständige Startbefehle mit Aruns Projektpfad stehen oben in der [README](../README.md).
 
 **Python-Umgebung (venv):**
 
@@ -66,12 +69,13 @@ python3 -m pytest
 Ligretto/
 ├── README.md                  Kurzbeschreibung für Besucher
 ├── AGENTS.md                  Regeln für KI-Agenten
+├── Bugs.md                    aktuelle Bugliste mit fortlaufenden IDs
 ├── .gitignore                 venv, Caches, .DS_Store usw. werden nicht gepusht
 ├── .venv/                     virtuelle Python-Umgebung (lokal, nicht im Repo)
 ├── Dokumentation/
 │   ├── Dokumentation.md       Arbeitsprotokoll und Änderungsprotokoll
 │   ├── Technische-Doku.md     diese Datei
-│   └── Bugs.md                offene Bugs
+│   └── Bugs.md                Verweis auf die Bugliste im Projekt-Root
 ├── backend/
 │   ├── memory.py              alle 160 Karten, erlaubte Farben und offene Räume (im Arbeitsspeicher)
 │   ├── connection/
@@ -90,7 +94,8 @@ Ligretto/
     ├── login.css              Styles der Startseite
     ├── game.html              Spielseite
     ├── main.js                Einstiegspunkt der Spielseite, Klick-Handler
-    ├── create-stack.js        Kartendaten, Startstapel, Aufbau im DOM
+    ├── create-stack.js        Backend-Stapel abrufen und im DOM aufbauen
+    ├── notes.js               nicht eingebundene Sammlung von Codefragmenten
     ├── move-cards.js          Karten verschieben, Stapel-Arrays pflegen
     ├── rules.js               Spielregeln
     ├── styles.css             gemeinsames Layout (Header, Footer, 3×3-Raster)
@@ -103,23 +108,12 @@ Ligretto/
 
 ## 4. Ablauf
 
-```mermaid
-flowchart TD
-    A[index.html] -->|Formular absenden oder<br>'Room erstellen'| B[login.js<br>schickt fetch an Backend<br>und wartet auf die Antwort]
-    B -->|Fehler| A
-    B -->|Erfolg| C[game.html?roomId=...&color=...<br>lädt main.js]
-    C --> D{color gültig?}
-    D -->|nein| A
-    D -->|ja| E[createStartStack:<br>3 offene, 10 Zehnerstapel, 27 Handkarten]
-    E --> F[createPlayArea:<br>16 leere Spielfelder]
-    F --> G[createDOMStack:<br>Stapel unten anzeigen]
-    G --> H[Klick-Handler warten auf Eingaben]
-```
-
-1. **Startseite:** Der Spieler gibt eine RoomID ein und wählt eine Kartenfarbe. `login.js` schickt eine Anfrage an `/joinRoom` bzw. `/createRoom` (Abschnitt 9.6) und wartet mit `await` auf die Antwort. Nur bei Erfolg (`response.ok`) geht es weiter zu `game.html`. RoomID (aus der Antwort des Backends) und Farbe werden als URL-Parameter übergeben: `game.html?roomId=...&color=...`. Bei einem Fehler bleibt der Spieler auf der Startseite, eine Meldung gibt es noch nicht.
-2. **Spielseite:** `main.js` liest `color` und `roomId` mit `URLSearchParams` aus der URL. `roomId` wird noch nicht verwendet. Ist die Farbe ungültig, erscheint eine Meldung und der Spieler kommt zurück zur Startseite.
-3. **Aufbau:** Die Karten werden verteilt, das Spielfeld und die eigenen Stapel werden im DOM erzeugt.
-4. **Spielen:** Karte anklicken (grüner Rahmen) und dann ein Ziel anklicken (siehe Abschnitt 7).
+1. **Startseite:** `login.js` schickt RoomID und Farbe an `/joinRoom` beziehungsweise nur die Farbe an `/createRoom`. Bei Erfolg ruft es `openLobbyScreen()` auf: Die Formularelemente werden ausgeblendet, der Wartescreen `#loadingScreen` eingeblendet. Bei Fehlern fehlt eine sichtbare Meldung.
+2. **Wartescreen:** „Starte das Spiel“ (`#startGame`) ruft `startGame(roomId, color)` auf und leitet mit `game.html?roomId=...&color=...` weiter. Der Button ist für alle Spieler sichtbar und startet nur das Spiel im eigenen Browser; andere Spieler werden nicht benachrichtigt. „Geh zurück in die Lobby“ (`#joinOtherLobbey`) ruft `joinOtherLobby()` auf und zeigt wieder das Formular; im Backend bleibt der Spieler im Raum eingetragen (BUG-033).
+3. **Spielseite:** `game.html` lädt `main.js`, das `rules.js` importiert. Dessen fehlender `CARDS`-Import stoppt das Laden bereits vor der Registrierung von `DOMContentLoaded` (BUG-029).
+4. **Noch nicht angepasster Einstieg:** Der vorhandene Listener liest `color` und `roomId`, prüft die Farbe und ruft danach die entfernte Funktion `createStartStack()` auf. Auch sein anschliessender Aufruf von `createDOMStack()` verwendet die alte Signatur. Dieser Code erreicht deshalb noch keinen funktionierenden Spielaufbau (BUG-025).
+5. **Implementierter separater Aufbau:** Bei direktem Aufruf von `createDOMStack(owner, roomId)` wird über `fetchStacks(roomId)` die Route `/createCards` angefragt. Die Antwort enthält `stacks` und `playerColors`. Der eigene Spieler wird unten angezeigt, die übrigen Spieler in ihrer Antwortreihenfolge oben, rechts und links. `createDOMStack()` gibt keine Stapel an die Klick-Handler zurück.
+6. **Spielfeld und Interaktion:** `createPlayArea()` erzeugt separat 16 Ablagefelder. Die vorhandenen Klick-Handler arbeiten noch mit `playerStartStacks`; ihre vorgesehene Wirkung ist in Abschnitt 7 beschrieben. Eine Synchronisation von Spielzügen zwischen Spielern existiert nicht.
 
 ---
 
@@ -139,18 +133,22 @@ Jede Karte ist ein Objekt (JavaScript) bzw. ein Dictionary (Python) mit denselbe
 | `src` | `"images/green/five.PNG"` | Bild der Vorderseite |
 | `back` | `"images/back/yellow.PNG"` | Bild der Rückseite |
 
-Es gibt 4 Besitzer × 4 Farben × 10 Werte = **160 Karten**. Die Liste steht zweimal im Projekt: als `CARDS` in `frontend/create-stack.js` und in `backend/memory.py`.
+Es gibt 4 Besitzer × 4 Farben × 10 Werte = **160 Karten**. Die vollständige Liste steht als `CARDS` in `backend/memory.py`. Das Frontend erhält Kartenobjekte über `/createCards`; `frontend/create-stack.js` exportiert keine lokale Kartenliste mehr. `frontend/rules.js` erwartet diesen Export noch (BUG-029).
 
 ### 5.2 IDs im DOM
 
 | Element | ID / Klasse | Beispiel |
 |---|---|---|
+| Startseite: Formular | ID `loginForm`, Felder `roomIdInput` und `chosenColor`, Buttons `submitRoomId` und `createRoomButton` | |
+| Startseite: Wartescreen | ID `loadingScreen`, Buttons `startGame` und `joinOtherLobbey` | Kinder werden über das Attribut `hidden` ein- und ausgeblendet |
 | Kartenbild | ID `image` + Karten-ID | `imageyellow-green-5` |
 | offener Kartenplatz | ID `openCard` + Karten-ID, Klasse `openCardsElement` | `openCardyellow-green-5` |
 | Bild einer offenen Karte | Klasse `openCardImage` | |
 | Zehnerstapel-Container | ID `tenStackDiv` + Farbe, Klasse `tenStackElement` | `tenStackDivyellow` |
 | Karte im Zehnerstapel | Klasse `tenStackImage` | |
 | Handkarten-Container | ID `handCardsDiv` + Farbe, Klasse `handCardsElement` | |
+| Handkarten-Rückseite | ID `handCardsBackgroundImage`, Klasse `handCardsImage` | bei mehreren Spielern derzeit doppelt vergeben (BUG-031) |
+| Spielerbereiche | Suffix `Bottom`, `Top`, `Right` oder `Left` | `openCardsTop`, `tenStackRight`, `handCardsLeftClosed` |
 | Spielfeld-Feld | ID `playAreaField0` bis `playAreaField15`, Klasse `playAreaField` | |
 
 Das Präfix `image` ist wichtig: Die Regel-Funktionen im Frontend (`getNumber`, `getColor`) schneiden die ersten 5 Zeichen ab, um die Karten-ID zu erhalten. Das Backend arbeitet dagegen mit Karten-IDs **ohne** Präfix (siehe 9.3).
@@ -159,12 +157,14 @@ Das Präfix `image` ist wichtig: Die Regel-Funktionen im Frontend (`getNumber`, 
 
 | Array | Ort | Inhalt |
 |---|---|---|
-| `openCards` | `playerStartStacks` in `main.js` | offene Karten des Spielers |
-| `tenStack` | `playerStartStacks` in `main.js` | Zehnerstapel, `tenStack[0]` liegt oben |
-| `handCards` | `playerStartStacks` in `main.js` | verdeckte Handkarten |
+| `openCards` | `stacks[color]` in `createDOMStack()` | offene Karten des Spielers |
+| `tenStack` | `stacks[color]` in `createDOMStack()` | Zehnerstapel, `tenStack[0]` liegt oben |
+| `handCards` | `stacks[color]` in `createDOMStack()` | verdeckte Handkarten |
 | `laidCards` | exportiert aus `move-cards.js` | alle Karten auf dem Spielfeld, auch überdeckte |
 
-Wenn eine Karte gelegt wird, verschwindet sie aus ihrem Stapel-Array und kommt in `laidCards`. Die Ausnahme ist das Nachfüllen: Eine Karte vom Zehnerstapel auf einem leeren offenen Platz kommt in `openCards`.
+Die Getter liefern die jeweiligen Arrays unverändert zurück. Sie werden nicht kopiert. `createDOMStack()` verwendet sie lokal; `main.js` erwartet noch das nicht mehr erzeugte `playerStartStacks` (BUG-025).
+
+Die vorhandene Verschiebelogik arbeitet wie folgt: Wenn eine Karte gelegt wird, verschwindet sie aus ihrem Stapel-Array und kommt in `laidCards`. Die Ausnahme ist das Nachfüllen: Eine Karte vom Zehnerstapel auf einem leeren offenen Platz kommt in `openCards`.
 
 ---
 
@@ -175,20 +175,28 @@ Wenn eine Karte gelegt wird, verschwindet sie aus ihrem Stapel-Array und kommt i
 | Funktion | Beschreibung |
 |---|---|
 | `getSubmitValues()` | liest RoomID und Farbe aus dem Formular, gibt `{ color, roomId }` zurück |
-| `createRoom(roomId, color)` | leitet zu `game.html?roomId=...&color=...` weiter (Werte mit `encodeURIComponent`) |
-| `joinRoom(roomId, color)` | leitet zu `game.html?roomId=...&color=...` weiter (Werte mit `encodeURIComponent`) |
+| `openLobbyScreen()` | blendet alle Kinder von `#loginForm` aus und alle Kinder von `#loadingScreen` ein |
+| `joinOtherLobby()` | Gegenstück: blendet das Formular wieder ein und den Wartescreen aus; keine Anfrage ans Backend |
+| `startGame(roomId, color)` | leitet zu `game.html?roomId=...&color=...` weiter (Werte mit `encodeURIComponent`) |
 
-Beide Listener sind `async` und schicken per `POST` JSON ans Backend: „Beitreten“ schickt `{ color, roomId }` an `http://localhost:8000/joinRoom`, „Erstelle einen neuen Room“ schickt nur `{ color }` an `http://localhost:8000/createRoom`. Ist `response.ok`, wird die Antwort `{ roomId, color }` gelesen und `joinRoom()` bzw. `createRoom()` mit der RoomID aus der Antwort aufgerufen. Bei einem Fehler gibt „Beitreten“ die Antwort nur mit `console.log` aus, „Erstellen“ macht nichts. `login.js` verwendet kein `sessionStorage` mehr.
+Der `DOMContentLoaded`-Listener blendet zuerst den Wartescreen aus und hält `data`, `color` und `roomId` als gemeinsame Variablen für alle Listener. Die beiden Formular-Listener sind `async` und schicken per `POST` JSON ans Backend: „Beitreten“ schickt `{ color, roomId }` an `http://localhost:8000/joinRoom` und setzt dabei die gemeinsamen `color` und `roomId`, „Erstelle einen neuen Room“ schickt nur `{ color }` an `http://localhost:8000/createRoom` und verwendet eine eigene lokale `color`. Ist `response.ok`, wird die Antwort in `data` gespeichert, mit `console.log` ausgegeben und `openLobbyScreen()` aufgerufen. Bei einem Fehler gibt „Beitreten“ die Antwort nur mit `console.log` aus, „Erstellen“ macht nichts. Der Klick auf `#startGame` ruft `startGame(roomId, color)` mit den gemeinsamen Variablen auf, die nach dem Erstellen nicht gesetzt sind (BUG-032). Der Klick auf `#joinOtherLobbey` ruft `joinOtherLobby()` auf. `login.js` verwendet kein `sessionStorage`.
 
-### 6.2 `create-stack.js` (Daten und Aufbau)
+`login.css` enthält eine Regel `[hidden] { display: none !important; }`, damit ausgeblendete Elemente nicht durch andere `display`-Regeln (z. B. `form * { display: block }`) wieder sichtbar werden. `#loadingScreen` liegt im Raster von `main` in Spalte 2, Zeile 2.
+
+### 6.2 `create-stack.js` (Backend-Daten und Aufbau)
 
 | Funktion | Beschreibung |
 |---|---|
-| `CARDS` | Liste aller 160 Karten (exportiert) |
-| `getDeck(owner)` | gibt die 40 Karten eines Spielers zurück. Bei ungültiger Farbe: Meldung, Weiterleitung zu `index.html`, Rückgabe `false` |
-| `createStartStack(owner)` | wählt 3 offene und 10 Zehnerstapel-Karten zufällig, mischt die restlichen 27 Handkarten. Gibt `{ openCards, tenStack, handCards }` zurück, bei ungültiger Farbe `false` |
-| `createDOMStack(openCards, tenStack, handCards)` | zeigt die Stapel im unteren Spielerbereich an. Der Zehnerstapel liegt versetzt übereinander (2,5 px pro Karte), nur die oberste Karte ist klickbar (`pointerEvents`). Die Handkarten zeigen die Rückseite in der Spielerfarbe. Die Farbe liest die Funktion selbst aus `sessionStorage` (`playerColor`), nicht aus der URL |
+| `fetchStacks(roomId)` | asynchroner POST an `http://localhost:8000/createCards` mit `{ roomId }`; liefert bei erfolgreicher HTTP-Antwort die JSON-Daten `{ stacks, playerColors }`, sonst `false`. Netzwerk- und JSON-Fehler werden nicht abgefangen |
+| `getTenStack(stack)` | liefert `stack.tenStack` als ursprüngliches Array |
+| `getOpenCards(stack)` | liefert `stack.openCards` als ursprüngliches Array |
+| `getHandCards(stack)` | liefert `stack.handCards` als ursprüngliches Array |
+| `createDOMStack(owner, roomId)` | holt die Stapel und zeigt alle Spieler an: `owner` unten, Gegner oben, rechts und links. Gibt ein Promise ohne Ergebniswert zurück; bei `false` aus `fetchStacks()` nur Konsolenmeldung und Abbruch |
 | `createPlayArea()` | erzeugt in `#playArea` ein 4 × 4-Raster mit 16 leeren Feldern (`playAreaField`) |
+
+`owner` ist die eigene Spielerfarbe und muss für einen vollständigen Aufbau in `playerColors` enthalten sein. Die Stapel sind nach Spielerfarbe indiziert. Zehnerstapel-Karten liegen mit 2,5 px Versatz übereinander, nur `tenStack[0]` ist klickbar. Der Handstapel zeigt eine Rückseite in der jeweiligen Spielerfarbe; die blaue Rückseite wird gedreht. Das Handkartenarray wird gelesen, aber noch nicht zum Aufdecken verwendet.
+
+Jeder Abruf verteilt im Backend sämtliche Raumstapel neu (BUG-026). `CARDS`, `getDeck()` und `createStartStack()` sind nicht mehr Bestandteil des Moduls. `main.js` und `rules.js` sind daran noch nicht vollständig angepasst.
 
 ### 6.3 `move-cards.js` (Karten verschieben)
 
@@ -202,6 +210,8 @@ Beide Listener sind `async` und schicken per `POST` JSON ans Backend: „Beitret
 
 ### 6.4 `rules.js` (Spielregeln)
 
+Das Modul erwartet weiterhin `CARDS` aus `create-stack.js`. Dieser Import scheitert aktuell (BUG-029); die folgenden Funktionen beschreiben den vorhandenen, dadurch nicht ausführbaren Regelcode.
+
 | Funktion | Beschreibung |
 |---|---|
 | `getNumber(card)` | Wert der Karte (1 bis 10), `undefined` bei unbekannter Karte |
@@ -210,7 +220,7 @@ Beide Listener sind `async` und schicken per `POST` JSON ans Backend: „Beitret
 
 ### 6.5 `main.js` (Einstiegspunkt)
 
-Startet nach `DOMContentLoaded`, liest `color` und `roomId` aus den URL-Parametern, prüft die Spielerfarbe und baut die Seite auf (siehe Abschnitt 4). Der Button „Anderem Raum beitreten“ (`#joinOtherRoom`) führt zurück zu `index.html`. Der Spielzustand liegt in zwei Variablen:
+Enthält einen Listener für `DOMContentLoaded`, der `color` und `roomId` aus den URL-Parametern liest und die Spielerfarbe prüft. Seine Registrierung und der anschliessende Spielaufbau sind durch BUG-029 beziehungsweise BUG-025 blockiert (siehe Abschnitt 4). Der Button „Anderem Raum beitreten“ (`#joinOtherRoom`) führt zurück zu `index.html`. Der Spielzustand liegt in zwei Variablen:
 
 | Variable | Bedeutung |
 |---|---|
@@ -219,11 +229,15 @@ Startet nach `DOMContentLoaded`, liest `color` und `roomId` aus den URL-Paramete
 
 Die Klick-Handler sind in Abschnitt 7 beschrieben.
 
+### 6.6 `notes.js` (Codefragmente)
+
+Nicht eingebundene Notizen mit Fragmenten für offene Karten, Zehnerstapel, Handstapel, Datenabruf und DOM-Zugriffe. Die Datei ist kein ausführbares Modul: Sie enthält doppelte Deklarationen und setzt externe Variablen voraus (BUG-030).
+
 ---
 
 ## 7. Interaktion: Karte auswählen und legen
 
-Ein Zug besteht immer aus zwei Klicks: **Karte auswählen** (grüner Rahmen) und **Ziel anklicken**.
+Die folgende Tabelle beschreibt die vorhandenen Klick-Handler. Wegen der Startfehler werden sie derzeit nicht registriert. Ein Zug besteht im vorgesehenen Ablauf aus zwei Klicks: **Karte auswählen** (grüner Rahmen) und **Ziel anklicken**.
 
 | Klick auf | Bedingung | Ergebnis |
 |---|---|---|
@@ -264,11 +278,11 @@ Zentraler Speicher des Backends, nur im Arbeitsspeicher. Beim Neustart des Serve
 
 | Variable | Typ | Inhalt |
 |---|---|---|
-| `CARDS` | Liste | alle 160 Karten, gleicher Aufbau wie im Frontend (Abschnitt 5.1) |
+| `CARDS` | Liste | alle 160 Karten; Kartenobjekte werden über die API ans Frontend übergeben (Abschnitt 5.1) |
 | `acceptedColors` | Liste | erlaubte Spielerfarben: `"pink"`, `"yellow"`, `"green"`, `"blue"` (gleich wie die `<option>`-Werte in `index.html`) |
 | `rooms` | Dictionary | RoomID (String) → Daten eines Raums. Enthält zum Testen die zwei Beispielräume `123456` (Blau, Pink) und `654321` (Blau, Grün) |
 
-Jeder Raum in `rooms` hat diesen Aufbau:
+Die Raumdaten verwenden folgende Schlüssel; `tenStack` und `stacks` sind abhängig von Herkunft und Verteilungszustand nicht in jedem Raum vorhanden:
 
 | Schlüssel | Typ | Inhalt |
 |---|---|---|
@@ -279,7 +293,7 @@ Jeder Raum in `rooms` hat diesen Aufbau:
 
 In den Beispielräumen stehen in `stacks` Karten-IDs (z. B. `"blue-green-7"`, die letzte ID ist die oberste Karte). `create_cards()` speichert dagegen ganze Karten-Dictionaries aus `CARDS`.
 
-Damit passen `playerColors`, `laidCards` und `tenStack` eines Raums direkt als Parameter zu `countCards()` (Abschnitt 9.4).
+`countCards()` erwartet `playerColors`, `laidCards` und den Zähler `tenStack` (Abschnitt 9.4). Bei den Beispielräumen fehlt dieser Zähler. Änderungen der Kartenarrays im Browser aktualisieren die Backend-Zähler noch nicht.
 
 ### 9.2 `backend/logic/shuffle.py`
 
@@ -289,7 +303,7 @@ Damit passen `playerColors`, `laidCards` und `tenStack` eines Raums direkt als P
 | `shuffleDeck(CARDS, playerColor)` | die Karten des Spielers, gemischt. `False` bei unbekannter Farbe |
 | `getDivideStack(CARDS, playerColor)` | gibt das Tupel `(tenStack, openCards, handCards)` mit 10/3/27 Karten zurück. Bei unbekannter Farbe: `ValueError("Player color unknown")` |
 
-**Achtung:** Die Reihenfolge der Rückgabe ist eine andere als im Frontend. `createStartStack()` gibt `{ openCards, tenStack, handCards }` zurück, `getDivideStack()` gibt `(tenStack, openCards, handCards)` zurück.
+`getDivideStack()` liefert ein Tupel in der Reihenfolge `(tenStack, openCards, handCards)`. `create_cards()` ordnet dessen Teile den gleichnamigen Schlüsseln in `stacks[color]` zu; das Frontend liest sie über diese Schlüssel.
 
 ### 9.3 `backend/logic/rules.py`
 
@@ -330,17 +344,17 @@ Start: `uvicorn backend.connection.routes:app` im Projektordner (Abschnitt 2).
 
 **`routes.py`** – FastAPI-App `app`:
 
-`CORSMiddleware` erlaubt dem Origin `http://localhost:5500` die Methoden GET und POST sowie den Header `Content-Type`. Sie beantwortet auch die OPTIONS-Preflight-Anfragen des Browsers. `http://127.0.0.1:5500` ist ein anderer Origin und nicht freigegeben. Diese Konfiguration ist für die lokale Entwicklung gedacht; bei einer Veröffentlichung müssen API-Adresse und gegebenenfalls CORS-Freigabe zur Bereitstellung passen.
+`CORSMiddleware` erlaubt mit `allow_origins=["*"]` jedem Origin die Methoden GET und POST sowie den Header `Content-Type`. Sie beantwortet auch die OPTIONS-Preflight-Anfragen des Browsers. Diese Konfiguration ist für die lokale Entwicklung gedacht; bei einer Veröffentlichung müssen API-Adresse und CORS-Freigabe zur Bereitstellung passen (BUG-017).
 
 | Route | Funktion | Body | Erfolg | Fehler |
 |---|---|---|---|---|
 | `POST /joinRoom` | `join_room(data)` | `joinRoomRequest` | `200` `{ roomId, color }`, Farbe wird in `playerColors` eingetragen, `tenStack[color] = 10` | `400` leere Eingabe oder Farbe nicht in `acceptedColors`, `404` Raum nicht gefunden, `409` Farbe im Raum schon vergeben |
 | `POST /createRoom` | `create_room(data)` | `roomRequestBase` | `200` `{ roomId, color }` mit neuer RoomID, Raum wird in `rooms` angelegt | `400` leere Farbe oder Farbe nicht in `acceptedColors` |
-| `POST /createCards` | `create_cards(data)` | `createCards` | `200` `{ stacks }`: für jede Farbe in `playerColors` die mit `getDivideStack()` gemischten Stapel `tenStack` (10), `openCards` (3) und `handCards` (27), gespeichert unter `rooms[roomId]["stacks"]` | `404` Raum nicht gefunden |
+| `POST /createCards` | `create_cards(data)` | `createCards` | `200` `{ stacks, playerColors }`: Farben in Raumreihenfolge und für jede Farbe in `playerColors` die mit `getDivideStack()` gemischten Stapel `tenStack` (10), `openCards` (3) und `handCards` (27), gespeichert unter `rooms[roomId]["stacks"]` | `404` Raum nicht gefunden |
 
 `create_room()` erzeugt die RoomID selbst mit `createRoomID()` und würfelt neu, solange sie schon in `rooms` vorkommt. Eine mitgeschickte `roomId` wird ignoriert.
 
-`create_cards()` überschreibt bei jedem Aufruf die Stapel aller Spieler im Raum. Das Frontend ruft die Route noch nicht auf.
+`create_cards()` überschreibt bei jedem Aufruf die Stapel aller Spieler im Raum. `fetchStacks()` enthält den Frontend-Aufruf; der normale Einstieg in `main.js` erreicht ihn noch nicht. Die Rückgabe `playerColors` bestimmt die Reihenfolge der Spielerplätze.
 
 **`backend/test/connection.py`** – für Tests der Routen vorgesehen, noch leer.
 
@@ -351,24 +365,26 @@ Start: `uvicorn backend.connection.routes:app` im Projektordner (Abschnitt 2).
 - `styles.css` teilt `main` in ein **3 × 3-Raster**. Die Mitte ist breit und enthält das Spielfeld, die vier Ränder sind für die Spieler (oben, links, rechts, unten).
 - `game.css` ordnet die Spielerbereiche im Raster an. Oben und unten liegen die Elemente nebeneinander, links und rechts untereinander.
 - Jeder Spielerbereich (`playerDeck…`) hat vier Container: offene Karten, Zehnerstapel, verdeckte Handkarten, aufgedeckte Handkarten.
-- Bisher wird nur der **untere** Bereich (`…Bottom`) befüllt, das ist der eigene Spieler.
+- `createDOMStack(owner, roomId)` befüllt unten den eigenen Spieler und verteilt die übrigen Farben auf oben, rechts und links. Dieser Aufbau ist im normalen Seitenstart noch nicht erreichbar.
 - Kartenbilder sind 60 × 90 px gross und haben einen Rahmen von 2 px.
 
 ---
 
 ## 11. Bekannte Einschränkungen
 
-- Der Server verwaltet Räume und kann Startstapel verteilen (`/createCards`). Spielzüge und Positionen werden noch nicht übertragen, die Spielseite verteilt die Karten weiterhin selbst. Es gibt noch kein echtes Multiplayer.
-- Das Frontend wertet beim Beitreten und Erstellen nur aus, ob die Anfrage erfolgreich war. Fehlermeldungen werden dem Spieler noch nicht angezeigt.
-- Die RoomID steht auf der Spielseite nur in der URL, sie wird nirgends angezeigt.
-- Räume liegen nur im Arbeitsspeicher (`memory.rooms`) und werden nie gelöscht.
-- Nur der eigene Spieler (unten) wird angezeigt. Die Bereiche oben, links und rechts sind leer.
-- Die Handkarten sind noch nicht klickbar, und `handCards…Open` wird noch nicht benutzt.
-- `rules.html` ist leer.
-- Kartenliste und Regeln gibt es doppelt, im Frontend (JavaScript) und im Backend (Python). Ändert sich etwas, müssen beide Stellen angepasst werden.
-- `game.html` lädt `create-stack.js` und `move-cards.js` zusätzlich direkt. Das ist harmlos, weil `main.js` sie sowieso importiert.
+- Wer einen Raum erstellt, kann das Spiel über den Wartescreen nicht starten, weil RoomID und Farbe fehlen (BUG-032). „Geh zurück in die Lobby“ meldet den Spieler im Backend nicht ab (BUG-033). Der Start-Button ist für alle sichtbar und startet nur den eigenen Browser.
+- Das Frontend-Regelmodul importiert die entfernte lokale Kartenliste (BUG-029). Der Einstieg verwendet ausserdem noch die entfernte Funktion `createStartStack()` und die alte Signatur von `createDOMStack()` (BUG-025).
+- Spielzüge und Spielstände werden nicht zwischen Browsern synchronisiert. Es gibt noch kein durchgängiges Multiplayer-Spiel.
+- `/createCards` mischt bei jedem Aufruf alle Raumstapel neu; ein kontrollierter, gemeinsamer Spielstart fehlt (BUG-026).
+- Fehler beim Beitreten und Erstellen werden dem Spieler nicht angezeigt. Beim Stapelabruf gibt es ebenfalls nur eine Konsolenmeldung für HTTP-Fehler; Netzwerkfehler werden nicht abgefangen.
+- Die RoomID wird weder im Wartescreen noch auf der Spielseite angezeigt, beim Erstellen nur in der Konsole (BUG-019).
+- Räume liegen nur im Arbeitsspeicher und werden nie gelöscht. Beispielräume und erzeugte Räume verwenden unterschiedliche Stapelformate (BUG-021, BUG-027).
+- Handkarten lassen sich noch nicht aufdecken oder spielen; `handCards…Open` wird nicht verwendet. Die Rückseitenbilder erhalten derzeit dieselbe ID (BUG-031).
+- `rules.html` ist leer. `notes.js` ist eine nicht eingebundene, nicht ausführbare Sammlung von Codefragmenten (BUG-030).
+- Die Regeln sind sowohl in JavaScript als auch in Python implementiert. Die vollständige Kartenliste liegt nur im Backend.
+- `game.html` lädt `create-stack.js` und `move-cards.js` zusätzlich direkt als Module.
 
-Offene Bugs stehen in [Bugs.md](Bugs.md).
+Offene Bugs stehen in [Bugs.md](../Bugs.md).
 
 ---
 

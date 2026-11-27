@@ -46,6 +46,7 @@ Gilt nur, wenn ich dich ausdrücklich bitte, Code zu kommentieren. Das ist etwas
 
 ### Grundregeln
 * Am Code selbst wird **nichts** geändert: keine Logik, keine Namen, keine Formatierung, keine Reihenfolge, keine Leerzeilen. Es kommen nur Kommentare dazu.
+* Bestehende Kommentare, die nicht mehr zum aktuellen Code passen, werden dabei ohne Nachfrage angepasst. `todo`-Kommentare bleiben stehen.
 * Es wird kommentiert wie in einer Firma, **nicht jede Zeile**:
   * Am Anfang jeder Datei steht ein kurzer Kommentar, was die Datei enthält.
   * Vor jeder Klasse und jeder Funktion steht ein kurzer Kommentar, der erklärt, was sie macht. Bei Funktionen, wenn es nicht offensichtlich ist, auch was rein- und was rausgeht.

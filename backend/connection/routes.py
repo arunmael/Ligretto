@@ -6,7 +6,6 @@ uvicorn backend.connection.routes:app
 from backend.connection.model import roomRequestBase
 from backend.connection.model import joinRoomRequest
 from backend.connection.model import createCards
-from backend.connection.model import getColors
 from backend.logic.createRoomId import createRoomID
 from backend.logic import shuffle
 from backend import memory
@@ -18,7 +17,7 @@ app = FastAPI()
 # Vor dem Hosting muss allow_origins auf die echte Adresse angepasst werden.
 app.add_middleware(
     CORSMiddleware, 
-    allow_origins=["http://localhost:5500"],
+    allow_origins=["*"],
     allow_methods=["GET", "POST"], 
     allow_headers=["Content-Type"],
 )

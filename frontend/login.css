@@ -44,3 +44,19 @@ button {
     background-color: blue;
     color: white;
 }
+
+ /* Verhindert, dass andere display-Regeln das Element wieder sichtbar machen. */
+[hidden] { 
+    display: none !important;
+}
+
+
+/* Warteraum in der mittleren Zelle des 3×3-Rasters von main, Inhalte zentriert untereinander mit Abstand */
+#loadingScreen {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    display: grid;
+    gap: 16px;
+    text-align: center;
+}
